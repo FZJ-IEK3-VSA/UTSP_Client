@@ -65,7 +65,7 @@ def request_all_profiles(
                 guid,
                 {
                     result_file_filters.LPGFilters.sum_hh1_ext_res(
-                        "Electricity", 3600
+                        "Electricity", 3600, True
                     ): datastructures.ResultFileRequirement.REQUIRED
                 },
             )
@@ -120,7 +120,7 @@ def calc_and_save_mean_series(
     # take unit, start date and resolution from the first time series
     first_result = list(list(results.values())[0].values())[0]
     file_content = first_result.data[
-        result_file_filters.LPGFilters.sum_hh1_ext_res("Electricity", 3600)
+        result_file_filters.LPGFilters.sum_hh1_ext_res("Electricity", 3600, True)
     ].decode()
     first_ts = json.loads(file_content)
     assert isinstance(first_ts, list), "Unexpected json format"
@@ -143,7 +143,7 @@ def mean_time_series(results: Iterable[ResultDelivery]):
     values = []
     for result in results:
         file_content = result.data[
-            result_file_filters.LPGFilters.sum_hh1_ext_res("Electricity", 3600)
+            result_file_filters.LPGFilters.sum_hh1_ext_res("Electricity", 3600, True)
         ].decode()
         ts = json.loads(file_content)
         values.append(ts)
