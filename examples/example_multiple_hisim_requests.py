@@ -25,7 +25,7 @@ all_requests = [
     TimeSeriesRequest(
         config,
         "hisim",
-        required_result_files=dict.fromkeys(["KPIs.csv"]),
+        required_result_files=dict.fromkeys(["kpi_config.json"]),
     )
     for config in all_hisim_configs
 ]
@@ -43,7 +43,7 @@ for request in all_requests:
     assert (
         reply.status != CalculationStatus.CALCULATIONFAILED
     ), f"The calculation failed: {reply.info}"
-    kpi = result.data["KPIs.csv"].decode()
+    kpi = result.data["kpi_config.json"].decode()
     results.append(kpi)
 
 
