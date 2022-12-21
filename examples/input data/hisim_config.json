@@ -1,15 +1,15 @@
 {
     "system_config_": {
         "pv_included": true,
-        "pv_peak_power": 9000,
+        "pv_peak_power": 5000,
         "smart_devices_included": false,
         "buffer_included": true,
         "buffer_volume": 500,
         "battery_included": true,
         "battery_capacity": 4,
         "heatpump_included": true,
-        "chp_included": false,
-        "chp_power": 12,
+        "chp_included": true,
+        "chp_power": 5,
         "h2_storage_included": false,
         "h2_storage_size": 100,
         "electrolyzer_included": false,
