@@ -95,17 +95,9 @@ def plot_sensitivity(
 def main():
     # load a HiSim system configuration
     example_folder = os.path.dirname(os.path.abspath(__file__))
-    system_config_path = os.path.join(
-        example_folder, "input data\\hisim_config_param.json"
-    )
-    with open(system_config_path, "r") as config_file:
-        example_system_config = config_file.read()
-
-    # Placeholder in the HiSim configuration to mark the parameter that should be varied
-    TEMPLATE_PLACEHOLDER = "<<PARAMETER>>"
-    assert (
-        TEMPLATE_PLACEHOLDER in example_system_config
-    ), f"'{TEMPLATE_PLACEHOLDER}' is missing in the config."
+    config_path = os.path.join(example_folder, "input data\\hisim_config.json")
+    with open(config_path, "r") as config_file:
+        config_dict = json.load(config_file)
 
     # Define all hisim system configurations here
     # parameter_name = "pv peak power [500 - 15e3]"
@@ -117,16 +109,21 @@ def main():
     # parameter_name = "battery capacity"
     # parameter_values = [0.5, 1.5, 4, 8, 10, 15, 20]
 
-    parameter_name = "buffer_volume [500 - 4000]"
+    parameter_name = "buffer_volume"
+
     parameter_values = [500, 600, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 4000]
 
     # parameter_values = ["false", "true"]
 
-    # insert all values and thus create different HiSim configurations
-    all_hisim_configs = [
-        example_system_config.replace(TEMPLATE_PLACEHOLDER, str(v))
-        for v in parameter_values
-    ]
+    # insert all values for the parameter and thus create different HiSim configurations
+    system_config_ = config_dict["system_config_"]
+    assert parameter_name in system_config_, f"Invalid parameter name: {parameter_name}"
+    all_hisim_configs = []
+    for value in parameter_values:
+        # set the respective value
+        system_config_[parameter_name] = value
+        # append the config string to the list
+        all_hisim_configs.append(json.dumps(config_dict))
 
     # process all requests and retrieve the results
     results = calculate_multiple_hisim_requests(all_hisim_configs)

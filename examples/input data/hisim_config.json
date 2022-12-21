@@ -5,8 +5,8 @@
         "smart_devices_included": false,
         "buffer_included": true,
         "buffer_volume": 500,
-        "battery_included": false,
-        "battery_capacity": 5,
+        "battery_included": true,
+        "battery_capacity": 4,
         "heatpump_included": true,
         "chp_included": false,
         "chp_power": 12,
@@ -25,28 +25,5 @@
         "url": "http://134.94.131.167:443/api/v1/profilerequest",
         "api_key": ""
     },
-    "archetype_config_": {
-        "location": "Aachen",
-        "occupancy_profile": {
-            "Name": "CHR01 Couple both at Work",
-            "Guid": {
-                "StrVal": "516a33ab-79e1-4221-853b-967fc11cc85a"
-            }
-        },
-        "building_code": "DE.N.SFH.05.Gen.ReEx.001.002",
-        "water_heating_system_installed": "HeatPump",
-        "heating_system_installed": "HeatPump",
-        "mobility_set": {
-            "Name": "Bus and two 30 km/h Cars",
-            "Guid": {
-                "StrVal": "f90fece2-901a-4419-8a6b-a0ed4ed6ceff"
-            }
-        },
-        "mobility_distance": {
-            "Name": "Travel Route Set for 10km Commuting Distance",
-            "Guid": {
-                "StrVal": "0b217fce-ad99-4ef1-8540-c07081856d3c"
-            }
-        }
-    }
+    "archetype_config_": null
 }
