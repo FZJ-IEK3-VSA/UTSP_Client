@@ -7,14 +7,14 @@
         "buffer_volume": 500,
         "battery_included": false,
         "battery_capacity": 5,
-        "heatpump_included": false,
+        "heatpump_included": true,
         "chp_included": false,
         "chp_power": 12,
-        "h2_storage_included": true,
+        "h2_storage_included": false,
         "h2_storage_size": 100,
-        "electrolyzer_included": true,
+        "electrolyzer_included": false,
         "electrolyzer_power": 5000.0,
-        "ev_included": true,
+        "ev_included": false,
         "charging_station": {
             "Name": "Charging At Home with 03.7 kW",
             "Guid": {
