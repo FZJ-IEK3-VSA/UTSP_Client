@@ -313,6 +313,12 @@ class Households:
             StrGuid("e7cb1be5-caac-4087-83e8-c181911a68e2"),
         )
     )
+    CHR62_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
+        JsonReference(
+            "CHR62 Couple, 30 - 64 years, vacation home (1 month presence only)",
+            StrGuid("e641e89e-41b3-4ee0-8df2-b0bb185f09ed"),
+        )
+    )
     CHS01_Couple_with_2_Children_Dad_Employed: JsonReference = JsonReference(
         "CHS01 Couple with 2 Children, Dad Employed",
         StrGuid("148a1c21-2a3a-49bf-93aa-20ac0e89724e"),
@@ -425,6 +431,10 @@ class TransportationDeviceSets:
     Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
         "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
     )
+    Bus_and_one_30_km_h_Gasoline_Car: JsonReference = JsonReference(
+        "Bus and one 30 km/h Gasoline Car",
+        StrGuid("045a831b-0fde-49ef-b0ce-f4dfda83034b"),
+    )
     Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
         "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
     )
@@ -467,6 +477,9 @@ class ChargingStationSets:
     )
     Charging_At_Work_with_22_kW: JsonReference = JsonReference(
         "Charging At Work with 22 kW", StrGuid("e24180ef-852e-4361-8fc8-0eb01bba096b")
+    )
+    Filling_Station_At_Home: JsonReference = JsonReference(
+        "Filling Station At Home", StrGuid("ecbaceba-f067-4cca-aaaa-3e93fd5afa85")
     )
 
 
