@@ -89,31 +89,33 @@ def plot_sensitivity(
 
     ax.legend()
     plt.show()
-    pass
 
 
-def main():
+def create_hisim_configs_from_parameter_value_list(
+    parameter_name: str,
+    parameter_values: List[float],
+    base_config_path: str,
+) -> List[str]:
+    """
+    Creates a list of HiSim configurations.
+    Reads a base configuration from file and inserts a number of
+    different values for a specific parameter. Each parameter value
+    results in one hisim configuration.
+
+    :param parameter_name: the name of the parameter
+    :type parameter_name: str
+    :param parameter_values: the list of values for the parameter
+    :type parameter_values: List[float]
+    :param base_config_path: the path to the base configuration file
+    :type base_config_path: str
+    :return: a list of hisim configurations
+    :rtype: List[str]
+    """
     # load a HiSim system configuration
     example_folder = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(example_folder, "input data\\hisim_config.json")
+    config_path = os.path.join(example_folder, base_config_path)
     with open(config_path, "r") as config_file:
         config_dict = json.load(config_file)
-
-    # Define all hisim system configurations here
-    # parameter_name = "pv peak power [500 - 15e3]"
-    # parameter_values = [500, 1000, 2000, 4000, 6000, 8000, 10000, 15000]
-
-    # parameter_name = "chp power [2-15]"
-    # parameter_values = [2, 4, 6, 8, 10, 12, 15]
-
-    # parameter_name = "battery capacity"
-    # parameter_values = [0.5, 1.5, 4, 8, 10, 15, 20]
-
-    parameter_name = "buffer_volume"
-
-    parameter_values = [500, 600, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 4000]
-
-    # parameter_values = ["false", "true"]
 
     # insert all values for the parameter and thus create different HiSim configurations
     system_config_ = config_dict["system_config_"]
@@ -124,14 +126,22 @@ def main():
         system_config_[parameter_name] = value
         # append the config string to the list
         all_hisim_configs.append(json.dumps(config_dict))
+    return all_hisim_configs
 
-    # process all requests and retrieve the results
-    results = calculate_multiple_hisim_requests(all_hisim_configs)
-    print(f"Retrieved results from {len(results)} HiSim requests")
 
+def get_kpi_lists_from_results(results: List[str]) -> Dict[str, List[float]]:
+    """
+    Extracts the relevant KPIs from the list of result strings and produces one
+    list for each KPI.
+
+    :param results: list of result strings from the HiSim requests
+    :type results: List[str]
+    :return: dict containing one list for each KPI
+    :rtype: Dict[str, List[float]]
+    """
     # create lists of the relevant KPIs
     relevant_kpis = ["self_consumption_rate", "autarky_rate"]
-    kpis = {}
+    kpis: Dict[str, List[float]] = {}
     for result in results:
         # parse the results from a single request
         result_dict = json.loads(result)
@@ -141,6 +151,23 @@ def main():
                     kpis[key] = []
                 # add the kpi to the respective list
                 kpis[key].append(value)
+    return kpis
+
+
+def single_parameter_sensitivity_analysis(
+    parameter_name: str, parameter_values: List[float], base_config_path: str
+):
+
+    # get the hisim configs with the respective values
+    hisim_configs = create_hisim_configs_from_parameter_value_list(
+        parameter_name, parameter_values, base_config_path
+    )
+
+    # process all requests and retrieve the results
+    results = calculate_multiple_hisim_requests(hisim_configs)
+    print(f"Retrieved results from {len(results)} HiSim requests")
+
+    kpis = get_kpi_lists_from_results(results)
 
     # print parameter values and kpis
     print(f"parameter_values: {parameter_values}")
@@ -148,6 +175,23 @@ def main():
         print(f"{key}: {value}")
 
     plot_sensitivity(parameter_values, parameter_name, kpis)
+
+
+def main():
+    base_config_path = "input data\\hisim_config.json"
+    # Define value ranges for the parameter to investigate
+    # parameter_name = "pv peak power [500 - 15e3]"
+    # parameter_values = [500, 1000, 2000, 4000, 6000, 8000, 10000, 15000]
+    # parameter_name = "battery capacity"
+    # parameter_values = [0.5, 1.5, 4, 8, 10, 15, 20]
+    # parameter_name = "chp power [2-15]"
+    # parameter_values = [2, 4, 6, 8, 10, 12, 15]
+    parameter_name = "buffer_volume"
+    parameter_values = [500, 600, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 4000]
+
+    single_parameter_sensitivity_analysis(
+        parameter_name, parameter_values, base_config_path
+    )
 
 
 if __name__ == "__main__":
