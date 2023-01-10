@@ -3,6 +3,7 @@ requests
 dataclasses_json
 pandas
 numpy
+matplotlib
 mypy
 
 # types
