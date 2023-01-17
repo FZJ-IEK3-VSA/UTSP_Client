@@ -32,8 +32,7 @@ def load_hisim_config(config_path: str) -> Dict:
     :rtype: Dict
     """
     # load a HiSim system configuration
-    example_folder = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(example_folder, config_path)
+    config_path = os.path.join(config_path)
     with open(config_path, "r") as config_file:
         config_dict = json.load(config_file)
     return config_dict
@@ -53,13 +52,14 @@ def read_base_config_values(
     :rtype: Dict[str, float]
     """
     config_dict = load_hisim_config(base_config_path)
-    system_config_ = config_dict["system_config_"]
     base_values = {}
-    for name in relevant_parameters:
-        assert (
-            name in system_config_
-        ), f"Parameter '{name} is not contained in the hisim configuration"
-        base_values[name] = system_config_[name]
+    for parameter_name in relevant_parameters:
+        config = config_dict["system_config_"]
+        if parameter_name not in config:
+            # if the parameter is not in the system_config, look in the archetype_config instead
+            config = config_dict["archetype_config_"]
+        assert parameter_name in config, f"Invalid parameter name: {parameter_name}"
+        base_values[parameter_name] = config[parameter_name]
     return base_values
 
 
@@ -107,7 +107,9 @@ def calculate_relative_values(
 
 
 def plot_sensitivity_results(
-    all_kpis: Dict[str, Dict[float, Dict[str, float]]], base_config_path: str
+    all_kpis: Dict[str, Dict[float, Dict[str, float]]],
+    base_config_path: str,
+    kpi_name: str,
 ):
     # define base values for each parameter that will be varied
     base_values = read_base_config_values(base_config_path, all_kpis.keys())
@@ -116,12 +118,19 @@ def plot_sensitivity_results(
     host = host_subplot(111, axes_class=AA.Axes)
     plt.subplots_adjust(right=0.75, top=0.75)
 
+    host.set_xlabel(f"Relative parameter value [%]")
+    host.set_ylabel(f"Relative {kpi_name} value [%]")
+
     offset = 0
     for parameter_name, kpis in all_kpis.items():
         # select a KPI or combine multiple KPI into a new KPI
-        kpi_name = "autarky_rate"
         parameter_values = [value for value in kpis.keys()]
         kpi_values = [kpi[kpi_name] for kpi in kpis.values()]
+
+        # sort by parameter value
+        parameter_values, kpi_values = [
+            list(x) for x in zip(*sorted(zip(parameter_values, kpi_values)))
+        ]
 
         # find the index of the base value for norming
         base_value = base_values[parameter_name]
@@ -136,15 +145,23 @@ def plot_sensitivity_results(
         new_fixed_axis = pary.get_grid_helper().new_fixed_axis
         pary.axis["right"] = new_fixed_axis(loc="right", axes=pary, offset=(offset, 0))
         pary.axis["right"].toggle(all=True)
-        pary.set_ylabel(parameter_name)
+        pary.set_ylabel(f"{kpi_name} ({parameter_name})")
 
         new_fixed_axis = parx.get_grid_helper().new_fixed_axis
-        parx.axis["top"] = new_fixed_axis(loc="top", axes=parx, offset=(0, offset * 0.75))
+        parx.axis["top"] = new_fixed_axis(
+            loc="top", axes=parx, offset=(0, offset * 0.75)
+        )
         parx.axis["top"].toggle(all=True)
         parx.set_xlabel(parameter_name)
 
-        pary.set_yticks(ticks=curve.kpi_values_relative, labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute])
-        parx.set_xticks(ticks=curve.parameter_values_relative, labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute])
+        pary.set_yticks(
+            ticks=curve.kpi_values_relative,
+            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute],
+        )
+        parx.set_xticks(
+            ticks=curve.parameter_values_relative,
+            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute],
+        )
 
         line = pary.plot(
             curve.parameter_values_relative,
@@ -162,9 +179,9 @@ def plot_sensitivity_results(
 
 def main():
     path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
-    base_config_path = "..\\input data\\hisim_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
     all_kpis = read_sensitivity_results(path)
-    plot_sensitivity_results(all_kpis, base_config_path)
+    plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
 
 
 if __name__ == "__main__":

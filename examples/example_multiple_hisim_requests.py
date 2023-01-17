@@ -1,15 +1,13 @@
 """Sends multiple requests to HiSim and collects all results."""
 
-from dataclasses import dataclass
 import errno
 import json
 import os
-from typing import Dict, Iterable, List, Optional, Tuple
-from postprocessing.sensitivity_plots import (
+from typing import Dict, List, Optional, Tuple
+from examples.postprocessing.sensitivity_plots import (  # type: ignore
     load_hisim_config,
     read_base_config_values,
-    calculate_relative_values,
-    SensitivityAnalysisCurve
+    SensitivityAnalysisCurve,
 )
 
 from utspclient.client import request_time_series_and_wait_for_delivery, send_request
@@ -19,7 +17,6 @@ from utspclient.datastructures import (
     TimeSeriesRequest,
 )
 
-import numpy as np
 from matplotlib import pyplot as plt
 
 
@@ -43,7 +40,7 @@ def calculate_multiple_hisim_requests(hisim_configs: List[str]) -> List[ResultDe
         TimeSeriesRequest(
             config,
             "hisim",
-            required_result_files=dict.fromkeys(["kpi_config.json"]),
+            # required_result_files=dict.fromkeys(["kpi_config.json"]),
         )
         for config in hisim_configs
     ]
@@ -116,93 +113,43 @@ def create_hisim_configs_from_parameter_value_list(
     config_dict = load_hisim_config(base_config_path)
 
     # insert all values for the parameter and thus create different HiSim configurations
-    system_config_ = config_dict["system_config_"]
-    assert parameter_name in system_config_, f"Invalid parameter name: {parameter_name}"
+    config = config_dict["system_config_"]
+    if parameter_name not in config:
+        # if the parameter is not in the system_config, look in the archetype_config instead
+        config = config_dict["archetype_config_"]
+    assert parameter_name in config, f"Invalid parameter name: {parameter_name}"
+
     all_hisim_configs = []
     for value in parameter_values:
         # set the respective value
-        system_config_[parameter_name] = value
+        config[parameter_name] = value
         # optionally set boolean flags for this parameter if the value is not 0
         if boolean_attributes:
             for attribute in boolean_attributes:
-                system_config_[attribute] = value != 0
+                config[attribute] = value != 0
         # append the config string to the list
         all_hisim_configs.append(json.dumps(config_dict))
     return all_hisim_configs
 
 
-def get_kpi_lists_from_results(results: List[str]) -> Dict[str, List[float]]:
-    """
-    Extracts the relevant KPIs from the list of result strings and produces one
-    list for each KPI.
-
-    :param results: list of result strings from the HiSim requests
-    :type results: List[str]
-    :return: dict containing one list for each KPI
-    :rtype: Dict[str, List[float]]
-    """
-    # create lists of the relevant KPIs
-    relevant_kpis = ["self_consumption_rate", "autarky_rate"]
-    kpis: Dict[str, List[float]] = {}
-    for result in results:
-        # parse the results from a single request
-        result_dict = json.loads(result)
-        for key, value in result_dict.items():
-            if key in relevant_kpis:
-                if key not in kpis:
-                    kpis[key] = []
-                # add the kpi to the respective list
-                kpis[key].append(value)
-    return kpis
-
-
-def single_parameter_sensitivity_analysis(
-    parameter_name: str,
-    parameter_values: List[float],
-    base_config_path: str,
-    base_index: Optional[int] = None,
+def save_all_results(
+    parameter_name: str, parameter_values: List[float], results: List[ResultDelivery]
 ):
-    """
-    Executes a sensitivity analysis for a single parameter. Plots one curve for each
-    KPI (currently autarky rate and self consumption rate).
-
-    :param parameter_name: name of the parameter to investigate
-    :type parameter_name: str
-    :param parameter_values: values for the parameter
-    :type parameter_values: List[float]
-    :param base_config_path: path to the base config file
-    :type base_config_path: str
-    :param base_scenario_index: base index to use for calculating relative values,
-                                defaults to middle value of the lists
-    :type base_scenario_index: int, optional
-    """
-    # determine the index of the value which is used as base value for calculating relative value
-    if base_index is None:
-        # if not specified, use the value in the middle
-        base_index = len(parameter_values) // 2 - 1
-
-    # get the hisim configs with the respective values
-    hisim_configs = create_hisim_configs_from_parameter_value_list(
-        parameter_name, parameter_values, base_config_path
-    )
-
-    # process all requests and retrieve the results
-    results = calculate_multiple_hisim_requests(hisim_configs)
-    print(f"Retrieved results from {len(results)} HiSim requests")
-
-    kpis = get_kpi_lists_from_results(results)
-
-    # print parameter values and kpis
-    print(f"parameter_values: {parameter_values}")
-    for kpi_name, kpi_values in kpis.items():
-        print(f"{kpi_name}: {kpi_values}")
-
-    curves: Dict[str, SensitivityAnalysisCurve] = {}
-    for kpi_name, kpi_values in kpis.items():
-        curve = calculate_relative_values(parameter_values, kpi_values, base_index)
-        curves[kpi_name] = curve
-
-    plot_sensitivity(curves)
+    for i, value in enumerate(parameter_values):
+        # save result files
+        result_folder_name = f"./hisim_sensitivity_analysis/{parameter_name}-{value}"
+        # Create the directory if it does not exist
+        try:
+            os.makedirs(result_folder_name)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(result_folder_name):
+                pass
+            else:
+                raise
+        for filename, content in results[i].data.items():
+            filepath = os.path.join(result_folder_name, filename)
+            with open(filepath, "wb") as file:
+                file.write(content)
 
 
 def multiple_parameter_sensitivity_analysis(
@@ -233,9 +180,13 @@ def multiple_parameter_sensitivity_analysis(
             )
             parameter_value_ranges[name].append(base_value)
             parameter_value_ranges[name].sort()
+
+    # if parameter is not specified, no special boolean attributes need to
+    # be changed. Assign an empty dict.
     if boolean_attributes is None:
         boolean_attributes = {}
-    curves: Dict[str, SensitivityAnalysisCurve] = {}
+
+    all_hisim_configs: List[str] = []
     for parameter_name, parameter_values in parameter_value_ranges.items():
         # get the hisim configs with the respective values
         hisim_configs = create_hisim_configs_from_parameter_value_list(
@@ -244,83 +195,41 @@ def multiple_parameter_sensitivity_analysis(
             base_config_path,
             boolean_attributes.get(parameter_name, None),
         )
+        # put all hisim configs in a single list to calculate them all in parallel
+        all_hisim_configs.extend(hisim_configs)
+
+    all_results = calculate_multiple_hisim_requests(all_hisim_configs)
+    print(f"Retrieved results from {len(all_results)} HiSim requests")
+
+    index = 0
+    for parameter_name, parameter_values in parameter_value_ranges.items():
+        # for each parameter value, there is one result object
+        num_results = len(parameter_values)
+        results_for_one_param = all_results[index : index + num_results]
+        index += num_results
+        print(f"Retrieved {num_results} results for parameter {parameter_name}")
         # process all requests and retrieve the results
-        results = calculate_multiple_hisim_requests(hisim_configs)
-        print(f"Retrieved results from {len(results)} HiSim requests")
 
-        save_all_results(parameter_name, parameter_values, results)
-
-        # get a list for each KPI
-    #     kpis = get_kpi_lists_from_results(results)
-
-    #     # select a KPI or combine multiple KPI into a new KPI
-    #     # TODO: which KPI(s) should be used here?
-    #     result_kpi = np.sum(
-    #         [kpis["autarky_rate"], kpis["self_consumption_rate"]], axis=0
-    #     )
-    #     result_kpi = kpis["autarky_rate"]
-    #     print(kpis)
-
-    #     # find the index of the base value for norming
-    #     base_value = base_values[parameter_name]
-    #     base_index = parameter_values.index(base_value)
-
-    #     # calculate relative parameter and KPI values and store them in a curve object
-    #     curve = calculate_relative_values(parameter_values, result_kpi, base_index)
-
-    #     # store the curve object in the dict
-    #     curves[parameter_name] = curve
-
-    # plot_sensitivity(curves)
-
-
-def save_all_results(
-    parameter_name: str, parameter_values: List[float], results: List[ResultDelivery]
-):
-    for i, value in enumerate(parameter_values):
-        # save result files
-        result_folder_name = f"./hisim_sensitivity_analysis/{parameter_name}-{value}"
-        # Create the directory if it does not exist
-        try:
-            os.makedirs(result_folder_name)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(result_folder_name):
-                pass
-            else:
-                raise
-        for filename, content in results[i].data.items():
-            filepath = os.path.join(result_folder_name, filename)
-            with open(filepath, "wb") as file:
-                file.write(content)
+        save_all_results(parameter_name, parameter_values, results_for_one_param)
 
 
 def main():
-    base_config_path = "input data\\hisim_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {
-        "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
-        "battery_capacity": [1, 2, 5, 10]
+        # "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
+        # "battery_capacity": [1, 2, 5, 10]
         # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
+        "building_code": ["DE.N.SFH.01.Gen.ReEx.001.002", "DE.N.SFH.05.Gen.ReEx.001.002", "DE.N.SFH.10.Gen.ReEx.001.002"]
     }
     boolean_attributes = {
         "battery_capacity": ["battery_included"],
         "buffer_volume": ["buffer_included"],
     }
 
-    # Same relative points for all parameters
-    # relative_parameter_values = [0.5, 0.75, 1, 1.25, 1.5]
-    # parameter_value_ranges = {
-    #     key: [value * factor for factor in relative_parameter_values]
-    #     for key, value in base_values.items()
-    # }
-
     multiple_parameter_sensitivity_analysis(
         base_config_path, parameter_value_ranges, boolean_attributes
     )
-
-    # single_parameter_sensitivity_analysis(
-    #     parameter_name, parameter_values, base_config_path
-    # )
 
 
 if __name__ == "__main__":
