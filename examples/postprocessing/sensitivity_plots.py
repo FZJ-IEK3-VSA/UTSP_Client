@@ -114,7 +114,7 @@ def plot_sensitivity_results(
 
     # initialize empty figure
     host = host_subplot(111, axes_class=AA.Axes)
-    plt.subplots_adjust(right=0.75)
+    plt.subplots_adjust(right=0.75, top=0.75)
 
     offset = 0
     for parameter_name, kpis in all_kpis.items():
@@ -130,32 +130,39 @@ def plot_sensitivity_results(
         # calculate relative parameter and KPI values and store them in a curve object
         curve = calculate_relative_values(parameter_values, kpi_values, base_index)
 
-        par = host.twinx()
-        # par.ylim()
+        pary = host.twinx()
+        parx = host.twiny()
 
-        new_fixed_axis = par.get_grid_helper().new_fixed_axis
-        par.axis["right"] = new_fixed_axis(loc="right", axes=par, offset=(offset, 0))
-        par.axis["right"].toggle(all=True)
-        par.set_ylabel(parameter_name)
-        par.set_yticks(ticks=curve.kpi_values_relative, labels=[str(elem) for elem in curve.kpi_values_absolute])
-        par.set_ylim([min(curve.kpi_values_absolute), max(curve.kpi_values_absolute)])
-        # par.set_yticklabels(kpi_values)
+        new_fixed_axis = pary.get_grid_helper().new_fixed_axis
+        pary.axis["right"] = new_fixed_axis(loc="right", axes=pary, offset=(offset, 0))
+        pary.axis["right"].toggle(all=True)
+        pary.set_ylabel(parameter_name)
 
-        line = par.plot(
+        new_fixed_axis = parx.get_grid_helper().new_fixed_axis
+        parx.axis["top"] = new_fixed_axis(loc="top", axes=parx, offset=(0, offset * 0.75))
+        parx.axis["top"].toggle(all=True)
+        parx.set_xlabel(parameter_name)
+
+        pary.set_yticks(ticks=curve.kpi_values_relative, labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute])
+        parx.set_xticks(ticks=curve.parameter_values_relative, labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute])
+
+        line = pary.plot(
             curve.parameter_values_relative,
             curve.kpi_values_relative,
             label=parameter_name,
         )
-        par.axis["right"].label.set_color(line[0].get_color())
-        plt.show()
+        pary.axis["right"].label.set_color(line[0].get_color())
+        parx.axis["top"].label.set_color(line[0].get_color())
         offset += 60
 
     host.legend()
+    plt.show()
     pass
 
 
 def main():
-    path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
+    # path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
+    path = r"C:\Users\Johanna\Desktop\UTSP_Client\hisim_sensitivity_analysis"
     base_config_path = "..\\input data\\hisim_config.json"
     all_kpis = read_sensitivity_results(path)
     plot_sensitivity_results(all_kpis, base_config_path)

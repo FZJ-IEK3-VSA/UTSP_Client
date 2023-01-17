@@ -8,6 +8,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from examples.postprocessing.sensitivity_plots import (
     load_hisim_config,
     read_base_config_values,
+    SensitivityAnalysisCurve
 )
 
 from utspclient.client import request_time_series_and_wait_for_delivery, send_request
