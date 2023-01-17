@@ -1,3 +1,6 @@
+# Folder for sensitivity analysis data
+hisim_sensitivity_analysis/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
