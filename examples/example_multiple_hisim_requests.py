@@ -5,9 +5,10 @@ import errno
 import json
 import os
 from typing import Dict, Iterable, List, Optional, Tuple
-from examples.postprocessing.sensitivity_plots import (
+from postprocessing.sensitivity_plots import (
     load_hisim_config,
     read_base_config_values,
+    calculate_relative_values,
     SensitivityAnalysisCurve
 )
 
@@ -297,8 +298,8 @@ def main():
     base_config_path = "input data\\hisim_config.json"
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {
-        "pv_peak_power": [1e3, 2e3],
-        "battery_capacity": [0, 1],
+        "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
+        "battery_capacity": [1, 2, 5, 10]
         # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
     }
     boolean_attributes = {
