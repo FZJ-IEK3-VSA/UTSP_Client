@@ -133,7 +133,7 @@ def calc_and_save_mean_series(
     for hh_name, results_of_one_hh in results.items():
         mean_series = mean_time_series(results_of_one_hh.values())
         means[hh_name + f" [{unit}]"] = mean_series
-    index = pd.date_range(name="Time", start=start, freq=resolution, periods=length)
+    index = pd.date_range(name="Time", start=start, freq=resolution, periods=length)  # type: ignore
     data = pd.DataFrame(means, index=index)
     data.to_csv(result_file)
     print(f"Saved mean time series to '{result_file}'")
