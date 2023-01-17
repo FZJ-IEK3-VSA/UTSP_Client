@@ -7,7 +7,7 @@
         "buffer_volume": 150,
         "battery_included": false,
         "battery_capacity": 5,
-        "heatpump_included": true,
+        "heatpump_included": false,
         "chp_included": true,
         "chp_power": 5,
         "h2_storage_included": false,
@@ -27,6 +27,7 @@
     },
     "archetype_config_": {
         "water_heating_system_installed": "DistrictHeating",
-        "heating_system_installed": "DistrictHeating"
+        "heating_system_installed": "DistrictHeating",
+        "building_code": "DE.N.SFH.05.Gen.ReEx.001.002"
     }
 }
