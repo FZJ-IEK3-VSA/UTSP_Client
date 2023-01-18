@@ -117,6 +117,8 @@ def plot_sensitivity_results(
     # initialize empty figure
     host = host_subplot(111, axes_class=AA.Axes)
     plt.subplots_adjust(right=0.75, top=0.75)
+    host.set_xlabel("relative capacity [%]")
+    host.set_ylabel("relative devitaion [%]")
 
     host.set_xlabel(f"Relative parameter value [%]")
     host.set_ylabel(f"Relative {kpi_name} value [%]")
@@ -155,15 +157,15 @@ def plot_sensitivity_results(
         parx.set_xlabel(parameter_name)
 
         pary.set_yticks(
-            ticks=curve.kpi_values_relative,
-            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute],
-        )
+            ticks=[(elem - min(curve.kpi_values_relative))/(max(curve.kpi_values_relative) - min(curve.kpi_values_relative)) for elem in curve.kpi_values_relative],
+            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute]
+            )
         parx.set_xticks(
-            ticks=curve.parameter_values_relative,
-            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute],
-        )
+            ticks=[(elem - min(curve.kpi_values_relative))/(max(curve.kpi_values_relative) - min(curve.kpi_values_relative)) for elem in curve.parameter_values_relative],
+            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute]
+            )
 
-        line = pary.plot(
+        line = host.plot(
             curve.parameter_values_relative,
             curve.kpi_values_relative,
             label=parameter_name,
@@ -180,6 +182,9 @@ def plot_sensitivity_results(
 def main():
     path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
     base_config_path = "examples\\input data\\hisim_config.json"
+
+    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
+
     all_kpis = read_sensitivity_results(path)
     plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
 
