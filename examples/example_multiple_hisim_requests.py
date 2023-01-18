@@ -62,33 +62,6 @@ def calculate_multiple_hisim_requests(hisim_configs: List[str]) -> List[ResultDe
     return results
 
 
-def plot_sensitivity(curves: Dict[str, SensitivityAnalysisCurve]):
-    """
-    Creates a sensitivity star plot.
-
-    :param curves: curves to plot
-    :type curves: Dict[str, SensitivityAnalysisCurve]
-    """
-    # create a new figure
-    fig = plt.figure()
-    ax: plt.Axes = fig.add_subplot(1, 1, 1)
-    fig.suptitle("HiSim Sensitivity Analysis - 1 year")
-
-    description = "smart_devices_included=false, ev_included=false\nKPI=autarky_rate"
-
-    ax.set_title(description, fontdict={"fontsize": 9})  # type: ignore
-    ax.set_xlabel(f"Relative parameter value [%]")
-    ax.set_ylabel("Relative KPI value [%]")
-
-    # plot each curve
-    for curve_name, curve in curves.items():
-        ax.plot(curve.parameter_values, curve.kpi_values, label=curve_name, marker="x")
-
-    # add a legend and show the figure
-    ax.legend()
-    plt.show()
-
-
 def create_hisim_configs_from_parameter_value_list(
     parameter_name: str,
     parameter_values: List[float],
@@ -214,13 +187,19 @@ def multiple_parameter_sensitivity_analysis(
 
 
 def main():
+    with open("examples\\german_tabula_codes.csv", "r") as file:
+        building_codes = file.read().split("\n")
+
+    building_codes = building_codes[:15]
+
     base_config_path = "examples\\input data\\hisim_config.json"
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {
         # "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
-        # "battery_capacity": [1, 2, 5, 10]
+        # "battery_capacity": [1, 2, 5, 10],
         # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
-        "building_code": ["DE.N.SFH.01.Gen.ReEx.001.002", "DE.N.SFH.05.Gen.ReEx.001.002", "DE.N.SFH.10.Gen.ReEx.001.002"]
+        # "building_code": ["DE.N.SFH.01.Gen.ReEx.001.002", "DE.N.SFH.05.Gen.ReEx.001.002", "DE.N.SFH.10.Gen.ReEx.001.002"]
+        "building_code": building_codes,
     }
     boolean_attributes = {
         "battery_capacity": ["battery_included"],

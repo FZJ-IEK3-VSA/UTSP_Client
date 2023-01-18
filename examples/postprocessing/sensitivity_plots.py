@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import json
 from os import listdir
 import os
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Union
 from mpl_toolkits.axes_grid1 import host_subplot  # type: ignore
 import mpl_toolkits.axisartist as AA  # type: ignore
 import matplotlib.pyplot as plt
@@ -63,16 +63,21 @@ def read_base_config_values(
     return base_values
 
 
-def read_sensitivity_results(path: str) -> Dict[str, Dict[float, Dict[str, float]]]:
+def read_sensitivity_results(
+    path: str, float_values: bool = True
+) -> Dict[str, Dict[Union[float, str], Dict[str, float]]]:
     all_result_folders = listdir(path)
-    all_kpis: Dict[str, Dict[float, Dict[str, float]]] = {}
+    all_kpis: Dict[str, Dict[Union[float, str], Dict[str, float]]] = {}
     for folder in all_result_folders:
         parameter_name, parameter_value = folder.split("-")
         if parameter_name not in all_kpis:
             all_kpis[parameter_name] = {}
         kpi_file = os.path.join(path, folder, "kpi_config.json")
         with open(kpi_file, "r", encoding="utf-8") as file:
-            all_kpis[parameter_name][float(parameter_value)] = json.load(file)
+            if float_values:
+                all_kpis[parameter_name][float(parameter_value)] = json.load(file)
+            else:
+                all_kpis[parameter_name][parameter_value] = json.load(file)
     return all_kpis
 
 
@@ -157,13 +162,21 @@ def plot_sensitivity_results(
         parx.set_xlabel(parameter_name)
 
         pary.set_yticks(
-            ticks=[(elem - min(curve.kpi_values_relative))/(max(curve.kpi_values_relative) - min(curve.kpi_values_relative)) for elem in curve.kpi_values_relative],
-            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute]
-            )
+            ticks=[
+                (elem - min(curve.kpi_values_relative))
+                / (max(curve.kpi_values_relative) - min(curve.kpi_values_relative))
+                for elem in curve.kpi_values_relative
+            ],
+            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute],
+        )
         parx.set_xticks(
-            ticks=[(elem - min(curve.kpi_values_relative))/(max(curve.kpi_values_relative) - min(curve.kpi_values_relative)) for elem in curve.parameter_values_relative],
-            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute]
-            )
+            ticks=[
+                (elem - min(curve.kpi_values_relative))
+                / (max(curve.kpi_values_relative) - min(curve.kpi_values_relative))
+                for elem in curve.parameter_values_relative
+            ],
+            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute],
+        )
 
         line = host.plot(
             curve.parameter_values_relative,
@@ -176,17 +189,56 @@ def plot_sensitivity_results(
 
     host.legend()
     plt.show()
-    pass
+
+
+def plot_building_codes_results(
+    all_kpis: Dict[str, Dict[float, Dict[str, float]]], kpi_name: str
+):
+    """
+    Creates a sensitivity star plot.
+
+    :param curves: curves to plot
+    :type curves: Dict[str, SensitivityAnalysisCurve]
+    """
+    assert (
+        "building_code" in all_kpis and len(all_kpis) == 1
+    ), "Invalid configuartion for this plotting function"
+
+    building_code_results = all_kpis["building_code"]
+    parameter_values = [value for value in building_code_results.keys()]
+    kpi_values = [kpi[kpi_name] for kpi in building_code_results.values()]
+
+    # create a new figure
+    fig = plt.figure()
+    ax: plt.Axes = fig.add_subplot(1, 1, 1)
+
+    fig.suptitle("HiSim Sensitivity Analysis - 1 year")
+    # description = "smart_devices_included=false, ev_included=false\nKPI=autarky_rate"
+    # ax.set_title(description, fontdict={"fontsize": 9})  # type: ignore
+
+    ax.set_xlabel(f"Tabula Building Code")
+    ax.set_ylabel(kpi_name)
+
+    # plot each curve
+    ax.plot(parameter_values, kpi_values, marker="x")
+
+    plt.xticks(rotation=65, ha="right")  # type: ignore
+    fig.tight_layout()
+
+    # add a legend and show the figure
+    ax.legend()
+    plt.show()
 
 
 def main():
     path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
     base_config_path = "examples\\input data\\hisim_config.json"
 
-    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
+    all_kpis = read_sensitivity_results(path, False)
 
-    all_kpis = read_sensitivity_results(path)
-    plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
+    # plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
+
+    plot_building_codes_results(all_kpis, "self_consumption_rate")
 
 
 if __name__ == "__main__":
