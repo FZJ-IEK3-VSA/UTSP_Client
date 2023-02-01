@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import json
 from os import listdir
 import os
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Union, Tuple
 from mpl_toolkits.axes_grid1 import host_subplot  # type: ignore
 import mpl_toolkits.axisartist as AA  # type: ignore
 import matplotlib.pyplot as plt
@@ -98,6 +98,7 @@ def calculate_relative_values(
     :rtype: SensitivityAnalysisCurve
     """
     # determine the norming factors for calculating the relative parameter/KPI values (in percent)
+    parameter_values = [float(elem) for elem in parameter_values]
     norm_factor_parameter = parameter_values[base_index] / 100
     norm_factor_kpi = kpi_values[base_index] / 100
 
@@ -109,6 +110,32 @@ def calculate_relative_values(
     return SensitivityAnalysisCurve(
         parameter_values, parameter_values_relative, kpi_values, kpi_relative
     )
+
+def calculate_absolute_values(
+    relative_parameter_values: List[float], relative_kpi_values: List[float], parameter_values: List[float], kpi_values: List[float], base_index: int
+) -> Tuple[List[float],List[float]]:
+    """
+    Turns the relative parameter axis values back into absolute values, using
+    the base value specified through base_index.
+
+    :param relative_parameter_values: relative parameter values (ticks of x-axis)
+    :type parameter_values: List[float]
+    :param relative_kpi_values: relative KPI values (ticks of y-axis)
+    :type kpi_values: List[float]
+    :param base_index: index of the base value within the lists
+    :type base_index: int
+    :return: two lists: absolute parameter values and absolute kpi values as ticks for new axis
+    :rtype: Tuple[List[float],List[float]]
+
+    """
+
+    # determine the norming factors for calculating the relative parameter/KPI values (in percent)
+    norm_factor_parameter = parameter_values[base_index] / 100
+    norm_factor_kpi = kpi_values[base_index] / 100
+
+    absolute_parameter_values = [value * norm_factor_parameter for value in relative_parameter_values]
+    absolute_kpi_values = [value * norm_factor_kpi for value in relative_kpi_values]
+    return absolute_parameter_values, absolute_kpi_values
 
 
 def plot_sensitivity_results(
@@ -128,10 +155,12 @@ def plot_sensitivity_results(
     host.set_xlabel(f"Relative parameter value [%]")
     host.set_ylabel(f"Relative {kpi_name} value [%]")
 
-    offset = 0
+    lines = []
+    curves = []
+    base_indices = []
     for parameter_name, kpis in all_kpis.items():
         # select a KPI or combine multiple KPI into a new KPI
-        parameter_values = [value for value in kpis.keys()]
+        parameter_values = [float(value) for value in kpis.keys()]
         kpi_values = [kpi[kpi_name] for kpi in kpis.values()]
 
         # sort by parameter value
@@ -146,46 +175,47 @@ def plot_sensitivity_results(
         # calculate relative parameter and KPI values and store them in a curve object
         curve = calculate_relative_values(parameter_values, kpi_values, base_index)
 
-        pary = host.twinx()
-        parx = host.twiny()
-
-        new_fixed_axis = pary.get_grid_helper().new_fixed_axis
-        pary.axis["right"] = new_fixed_axis(loc="right", axes=pary, offset=(offset, 0))
-        pary.axis["right"].toggle(all=True)
-        pary.set_ylabel(f"{kpi_name} ({parameter_name})")
-
-        new_fixed_axis = parx.get_grid_helper().new_fixed_axis
-        parx.axis["top"] = new_fixed_axis(
-            loc="top", axes=parx, offset=(0, offset * 0.75)
-        )
-        parx.axis["top"].toggle(all=True)
-        parx.set_xlabel(parameter_name)
-
-        pary.set_yticks(
-            ticks=[
-                (elem - min(curve.kpi_values_relative))
-                / (max(curve.kpi_values_relative) - min(curve.kpi_values_relative))
-                for elem in curve.kpi_values_relative
-            ],
-            labels=[str(round(elem, 1)) for elem in curve.kpi_values_absolute],
-        )
-        parx.set_xticks(
-            ticks=[
-                (elem - min(curve.kpi_values_relative))
-                / (max(curve.kpi_values_relative) - min(curve.kpi_values_relative))
-                for elem in curve.parameter_values_relative
-            ],
-            labels=[str(round(elem, 1)) for elem in curve.parameter_values_absolute],
-        )
-
-        line = host.plot(
+        lines.append(host.plot(
             curve.parameter_values_relative,
             curve.kpi_values_relative,
             label=parameter_name,
+        ))
+        curves.append(curve)
+        base_indices.append(base_index)
+
+    line_index: int = 0
+    for parameter_name, kpis in all_kpis.items():
+        # new y axis
+        pary = host.twinx()
+        new_fixed_axis = pary.get_grid_helper().new_fixed_axis
+        pary.axis["right"] = new_fixed_axis(loc="right", axes=pary, offset=(line_index * 60, 0))
+        pary.axis["right"].toggle(all=True)
+        pary.set_ylabel(f"{kpi_name} ({parameter_name})")
+        y_original = host.get_yticks()
+        pary.set_yticks(y_original)
+        pary.set_ybound(host.get_ybound())
+
+        parx = host.twiny()
+        new_fixed_axis = parx.get_grid_helper().new_fixed_axis
+        parx.axis["top"] = new_fixed_axis(
+            loc="top", axes=parx, offset=(0, line_index * 45)
         )
-        pary.axis["right"].label.set_color(line[0].get_color())
-        parx.axis["top"].label.set_color(line[0].get_color())
-        offset += 60
+        parx.axis["top"].toggle(all=True)
+        parx.set_xlabel(parameter_name)
+        x_original = host.get_xticks()
+        parx.set_xticks(x_original)
+        parx.set_xbound(host.get_xbound())
+
+        # reset labels
+        x_tick_values, y_tick_values =  calculate_absolute_values(relative_parameter_values=x_original, relative_kpi_values=y_original,
+        parameter_values=curves[line_index].parameter_values_absolute, kpi_values=curves[line_index].kpi_values_absolute,
+        base_index=base_indices[line_index])
+
+        parx.set_xticklabels([str(round(value,1)) for value in x_tick_values])
+        pary.set_yticklabels([str(round(value,1)) for value in y_tick_values])
+        pary.axis["right"].label.set_color(lines[line_index][0].get_color())
+        parx.axis["top"].label.set_color(lines[line_index][0].get_color())
+        line_index += 1
 
     host.legend()
     plt.show()
@@ -233,12 +263,14 @@ def plot_building_codes_results(
 def main():
     path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
     base_config_path = "examples\\input data\\hisim_config.json"
+    # base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
+    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
 
     all_kpis = read_sensitivity_results(path, False)
 
-    # plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
+    plot_sensitivity_results(all_kpis, base_config_path, "self_consumption_rate")
 
-    plot_building_codes_results(all_kpis, "self_consumption_rate")
+    # plot_building_codes_results(all_kpis, "self_consumption_rate")
 
 
 if __name__ == "__main__":
