@@ -1,6 +1,7 @@
 """Sends multiple requests to HiSim and collects all results."""
 
 import errno
+import itertools
 import json
 import os
 from typing import Dict, List, Optional, Tuple
@@ -21,17 +22,21 @@ from matplotlib import pyplot as plt
 
 
 # Define UTSP connection parameters
-URL = "http://134.94.131.167:443/api/v1/profilerequest"
-API_KEY = "OrjpZY93BcNWw8lKaMp0BEchbCc"
+URL = "http://localhost:443/api/v1/profilerequest"
+API_KEY = ""
 
 
-def calculate_multiple_hisim_requests(hisim_configs: List[str]) -> List[ResultDelivery]:
+def calculate_multiple_hisim_requests(
+    hisim_configs: List[str], return_exceptions: bool = False
+) -> List[ResultDelivery | Exception]:
     """
     Sends multiple hisim requests for parallel calculation and collects
     their results.
 
     :param hisim_configs: the hisim configurations to calculate
     :type hisim_configs: List[str]
+    :param return_exceptions: whether exceptions should be caught and returned in the result list, defaults to False
+    :type return_exceptions: bool, optional
     :return: a list containing the content of the result KPI file for each request
     :rtype: List[str]
     """
@@ -51,14 +56,21 @@ def calculate_multiple_hisim_requests(hisim_configs: List[str]) -> List[ResultDe
         reply = send_request(URL, request, API_KEY)
 
     # Collect the results
-    results: List[ResultDelivery] = []
+    results: List[ResultDelivery | Exception] = []
     for request in all_requests:
         # This function waits until the request has been processed and the results are available
-        result = request_time_series_and_wait_for_delivery(URL, request, API_KEY)
-        assert (
-            reply.status != CalculationStatus.CALCULATIONFAILED
-        ), f"The calculation failed: {reply.info}"
-        results.append(result)
+        try:
+            result = request_time_series_and_wait_for_delivery(URL, request, API_KEY)
+            assert (
+                reply.status != CalculationStatus.CALCULATIONFAILED
+            ), f"The calculation failed: {reply.info}"
+            results.append(result)
+        except Exception as e:
+            if return_exceptions:
+                # return the exception as result
+                results.append(e)
+            else:
+                raise
     return results
 
 
@@ -105,24 +117,33 @@ def create_hisim_configs_from_parameter_value_list(
     return all_hisim_configs
 
 
+def create_dir_if_not_exists(result_folder_name: str):
+    # Create the directory if it does not exist
+    try:
+        os.makedirs(result_folder_name)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST or not os.path.isdir(result_folder_name):
+            raise
+
+
+def save_single_result(result_folder_name: str, result: ResultDelivery):
+    create_dir_if_not_exists(result_folder_name)
+    # save all result files in the folder
+    for filename, content in result.data.items():
+        filepath = os.path.join(result_folder_name, filename)
+        with open(filepath, "wb") as file:
+            file.write(content)
+
+
 def save_all_results(
     parameter_name: str, parameter_values: List[float], results: List[ResultDelivery]
 ):
     for i, value in enumerate(parameter_values):
         # save result files
-        result_folder_name = f"./hisim_sensitivity_analysis/{parameter_name}-{value}"
-        # Create the directory if it does not exist
-        try:
-            os.makedirs(result_folder_name)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(result_folder_name):
-                pass
-            else:
-                raise
-        for filename, content in results[i].data.items():
-            filepath = os.path.join(result_folder_name, filename)
-            with open(filepath, "wb") as file:
-                file.write(content)
+        result_folder_name = (
+            f"./results/hisim_sensitivity_analysis/{parameter_name}-{value}"
+        )
+        save_single_result(result_folder_name, results[i])
 
 
 def multiple_parameter_sensitivity_analysis(
@@ -173,6 +194,9 @@ def multiple_parameter_sensitivity_analysis(
 
     all_results = calculate_multiple_hisim_requests(all_hisim_configs)
     print(f"Retrieved results from {len(all_results)} HiSim requests")
+    assert all(
+        isinstance(r, ResultDelivery) for r in all_results
+    ), "Found an invalid result object"
 
     index = 0
     for parameter_name, parameter_values in parameter_value_ranges.items():
@@ -183,7 +207,67 @@ def multiple_parameter_sensitivity_analysis(
         print(f"Retrieved {num_results} results for parameter {parameter_name}")
         # process all requests and retrieve the results
 
-        save_all_results(parameter_name, parameter_values, results_for_one_param)
+        save_all_results(parameter_name, parameter_values, results_for_one_param)  # type: ignore
+
+
+def boolean_parameter_test():
+    base_config_path = "examples\\input data\\hisim_config.json"
+    # parameter ranges for full boolean parameter test
+    parameters = [
+        "pv_included",
+        # "smart_devices_included",
+        # "buffer_included",
+        # "battery_included",
+        # "heatpump_included",
+        # "chp_included",
+        # "h2_storage_included",
+        # "electrolyzer_included",
+        # "ev_included",
+    ]
+
+    num_requests = 2 ** len(parameters)
+    print(f"Creating {num_requests} HiSim requests")
+
+    config_dict = load_hisim_config(base_config_path)
+
+    # insert all values for the parameter and thus create different HiSim configurations
+    config = config_dict["system_config_"]
+
+    # get powerset of boolean parameters (all possible combinations of arbitrary lenght)
+    combinations = itertools.chain.from_iterable(
+        itertools.combinations(parameters, r) for r in range(len(parameters) + 1)
+    )
+
+    all_hisim_configs = []
+    for combination in combinations:
+        # set all boolean parameters
+        for parameter in parameters:
+            config[parameter] = parameter in combination
+        # append the config string to the list
+        all_hisim_configs.append(json.dumps(config_dict))
+
+    all_results = calculate_multiple_hisim_requests(
+        all_hisim_configs, return_exceptions=True
+    )
+
+    base_folder = f"./results/hisim_boolean_parameter_test"
+    digits = len(str(num_requests))
+    for i, result in enumerate(all_results):
+        folder_name = str(i).zfill(digits)
+        result_folder_path = os.path.join(base_folder, folder_name)
+        create_dir_if_not_exists(result_folder_path)
+        if isinstance(result, Exception):
+            # the calculation failed: save the error message
+            error_message_file = os.path.join(result_folder_path, "exception.txt")
+            with open(error_message_file, "w", encoding="utf-8") as error_file:
+                error_file.write(str(result))
+        else:
+            # save all result files
+            save_single_result(result_folder_path, result)
+        # additionally save the config
+        config_file_path = os.path.join(result_folder_path, "hisim_config.json")
+        with open(config_file_path, "w", encoding="utf-8") as config_file:
+            config_file.write(all_hisim_configs[i])
 
 
 def main():
@@ -199,8 +283,11 @@ def main():
         # "battery_capacity": [1, 2, 5, 10],
         # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
         # "building_code": ["DE.N.SFH.01.Gen.ReEx.001.002", "DE.N.SFH.05.Gen.ReEx.001.002", "DE.N.SFH.10.Gen.ReEx.001.002"]
-        "building_code": building_codes,
+        # "building_code": building_codes,
     }
+
+    # additional boolean attributes that must be set depending on
+    # the value of the continuous parameter
     boolean_attributes = {
         "battery_capacity": ["battery_included"],
         "buffer_volume": ["buffer_included"],
@@ -212,4 +299,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    boolean_parameter_test()
