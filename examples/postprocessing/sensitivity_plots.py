@@ -111,9 +111,14 @@ def calculate_relative_values(
         parameter_values, parameter_values_relative, kpi_values, kpi_relative
     )
 
+
 def calculate_absolute_values(
-    relative_parameter_values: List[float], relative_kpi_values: List[float], parameter_values: List[float], kpi_values: List[float], base_index: int
-) -> Tuple[List[float],List[float]]:
+    relative_parameter_values: List[float],
+    relative_kpi_values: List[float],
+    parameter_values: List[float],
+    kpi_values: List[float],
+    base_index: int,
+) -> Tuple[List[float], List[float]]:
     """
     Turns the relative parameter axis values back into absolute values, using
     the base value specified through base_index.
@@ -133,7 +138,9 @@ def calculate_absolute_values(
     norm_factor_parameter = parameter_values[base_index] / 100
     norm_factor_kpi = kpi_values[base_index] / 100
 
-    absolute_parameter_values = [value * norm_factor_parameter for value in relative_parameter_values]
+    absolute_parameter_values = [
+        value * norm_factor_parameter for value in relative_parameter_values
+    ]
     absolute_kpi_values = [value * norm_factor_kpi for value in relative_kpi_values]
     return absolute_parameter_values, absolute_kpi_values
 
@@ -175,11 +182,13 @@ def plot_sensitivity_results(
         # calculate relative parameter and KPI values and store them in a curve object
         curve = calculate_relative_values(parameter_values, kpi_values, base_index)
 
-        lines.append(host.plot(
-            curve.parameter_values_relative,
-            curve.kpi_values_relative,
-            label=parameter_name,
-        ))
+        lines.append(
+            host.plot(
+                curve.parameter_values_relative,
+                curve.kpi_values_relative,
+                label=parameter_name,
+            )
+        )
         curves.append(curve)
         base_indices.append(base_index)
 
@@ -188,7 +197,9 @@ def plot_sensitivity_results(
         # new y axis
         pary = host.twinx()
         new_fixed_axis = pary.get_grid_helper().new_fixed_axis
-        pary.axis["right"] = new_fixed_axis(loc="right", axes=pary, offset=(line_index * 60, 0))
+        pary.axis["right"] = new_fixed_axis(
+            loc="right", axes=pary, offset=(line_index * 60, 0)
+        )
         pary.axis["right"].toggle(all=True)
         pary.set_ylabel(f"{kpi_name} ({parameter_name})")
         y_original = host.get_yticks()
@@ -207,12 +218,16 @@ def plot_sensitivity_results(
         parx.set_xbound(host.get_xbound())
 
         # reset labels
-        x_tick_values, y_tick_values =  calculate_absolute_values(relative_parameter_values=x_original, relative_kpi_values=y_original,
-        parameter_values=curves[line_index].parameter_values_absolute, kpi_values=curves[line_index].kpi_values_absolute,
-        base_index=base_indices[line_index])
+        x_tick_values, y_tick_values = calculate_absolute_values(
+            relative_parameter_values=x_original,
+            relative_kpi_values=y_original,
+            parameter_values=curves[line_index].parameter_values_absolute,
+            kpi_values=curves[line_index].kpi_values_absolute,
+            base_index=base_indices[line_index],
+        )
 
-        parx.set_xticklabels([str(round(value,1)) for value in x_tick_values])
-        pary.set_yticklabels([str(round(value,1)) for value in y_tick_values])
+        parx.set_xticklabels([str(round(value, 1)) for value in x_tick_values])
+        pary.set_yticklabels([str(round(value, 1)) for value in y_tick_values])
         pary.axis["right"].label.set_color(lines[line_index][0].get_color())
         parx.axis["top"].label.set_color(lines[line_index][0].get_color())
         line_index += 1
@@ -261,7 +276,7 @@ def plot_building_codes_results(
 
 
 def main():
-    path = r"D:\Git-Repositories\utsp-client\hisim_sensitivity_analysis"
+    path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
     base_config_path = "examples\\input data\\hisim_config.json"
     # base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
     # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
