@@ -4,21 +4,18 @@ import errno
 import itertools
 import json
 import os
-from typing import Dict, List, Optional, Tuple
-from examples.postprocessing.sensitivity_plots import (  # type: ignore
-    load_hisim_config,
-    read_base_config_values,
-    SensitivityAnalysisCurve,
-)
+from typing import Dict, List, Optional
 
 from utspclient.client import request_time_series_and_wait_for_delivery, send_request
 from utspclient.datastructures import (
-    CalculationStatus,
     ResultDelivery,
     TimeSeriesRequest,
 )
 
-from matplotlib import pyplot as plt
+from examples.postprocessing.sensitivity_plots import (  # type: ignore
+    load_hisim_config,
+    read_base_config_values,
+)
 
 
 # Define UTSP connection parameters
@@ -45,7 +42,7 @@ def calculate_multiple_hisim_requests(
         TimeSeriesRequest(
             config,
             "hisim",
-            # required_result_files=dict.fromkeys(["kpi_config.json"]),
+            required_result_files=dict.fromkeys(["kpi_config.json"]),
         )
         for config in hisim_configs
     ]
@@ -53,7 +50,7 @@ def calculate_multiple_hisim_requests(
     # Send all requests to the UTSP
     for request in all_requests:
         # This function just sends the request and immediately returns so the other requests don't have to wait
-        reply = send_request(URL, request, API_KEY)
+        send_request(URL, request, API_KEY)
 
     # Collect the results
     results: List[ResultDelivery | Exception] = []
@@ -61,9 +58,6 @@ def calculate_multiple_hisim_requests(
         # This function waits until the request has been processed and the results are available
         try:
             result = request_time_series_and_wait_for_delivery(URL, request, API_KEY)
-            assert (
-                reply.status != CalculationStatus.CALCULATIONFAILED
-            ), f"The calculation failed: {reply.info}"
             results.append(result)
         except Exception as e:
             if return_exceptions:
@@ -215,9 +209,9 @@ def boolean_parameter_test():
     # parameter ranges for full boolean parameter test
     parameters = [
         "pv_included",
-        # "smart_devices_included",
-        # "buffer_included",
-        # "battery_included",
+        "smart_devices_included",
+        "buffer_included",
+        "battery_included",
         # "heatpump_included",
         # "chp_included",
         # "h2_storage_included",
@@ -282,7 +276,11 @@ def main():
         # "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
         # "battery_capacity": [1, 2, 5, 10],
         # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
-        # "building_code": ["DE.N.SFH.01.Gen.ReEx.001.002", "DE.N.SFH.05.Gen.ReEx.001.002", "DE.N.SFH.10.Gen.ReEx.001.002"]
+        "building_code": [
+            "DE.N.SFH.01.Gen.ReEx.001.002",
+            "DE.N.SFH.05.Gen.ReEx.001.002",
+            "DE.N.SFH.10.Gen.ReEx.001.002",
+        ]
         # "building_code": building_codes,
     }
 
@@ -300,3 +298,4 @@ def main():
 
 if __name__ == "__main__":
     boolean_parameter_test()
+    # main()
