@@ -1,0 +1,33 @@
+{
+    "system_config_": {
+        "pv_included": false,
+        "pv_peak_power": 0,
+        "smart_devices_included": false,
+        "buffer_included": false,
+        "buffer_volume": 0,
+        "battery_included": false,
+        "battery_capacity": 0,
+        "heatpump_included": false,
+        "chp_included": false,
+        "chp_power": 0,
+        "h2_storage_included": false,
+        "h2_storage_size": 0,
+        "electrolyzer_included": false,
+        "electrolyzer_power": 0,
+        "ev_included": false,
+        "charging_station": {
+            "Name": "Charging At Home with 03.7 kW",
+            "Guid": {
+                "StrVal": "38e3a15d-d6f5-4f51-a16a-da287d14608f"
+            }
+        },
+        "utsp_connect": true,
+        "url": "http://134.94.131.167:443/api/v1/profilerequest",
+        "api_key": "OrjpZY93BcNWw8lKaMp0BEchbCc"
+    },
+    "archetype_config_": {
+        "water_heating_system_installed": "DistrictHeating",
+        "heating_system_installed": "DistrictHeating",
+        "building_code": "DE.N.SFH.05.Gen.ReEx.001.002"
+    }
+}

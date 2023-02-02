@@ -279,7 +279,7 @@ def main():
     path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
     base_config_path = "examples\\input data\\hisim_config.json"
     # base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
-    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
+    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_buffer"
 
     all_kpis = read_sensitivity_results(path, False)
 
