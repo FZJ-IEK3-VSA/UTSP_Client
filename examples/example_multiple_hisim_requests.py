@@ -1,22 +1,17 @@
 """Sends multiple requests to HiSim and collects all results."""
 
+import copy
 import errno
 import itertools
 import json
 import os
 from typing import Dict, List, Optional
 
-from utspclient.client import request_time_series_and_wait_for_delivery, send_request
-from utspclient.datastructures import (
-    ResultDelivery,
-    TimeSeriesRequest,
-)
-
 from examples.postprocessing.sensitivity_plots import (  # type: ignore
-    load_hisim_config,
-    read_base_config_values,
-)
-
+    load_hisim_config, read_base_config_values)
+from utspclient.client import (request_time_series_and_wait_for_delivery,
+                               send_request)
+from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
 
 # Define UTSP connection parameters
 URL = "http://localhost:443/api/v1/profilerequest"
@@ -71,9 +66,9 @@ def calculate_multiple_hisim_requests(
 def create_hisim_configs_from_parameter_value_list(
     parameter_name: str,
     parameter_values: List[float],
-    base_config_path: str,
+    base_config: Dict,
     boolean_attributes: Optional[List[str]] = None,
-) -> List[str]:
+) -> List[Dict]:
     """
     Creates a list of HiSim configurations.
     Reads a base configuration from file and inserts a number of
@@ -89,17 +84,22 @@ def create_hisim_configs_from_parameter_value_list(
     :return: a list of hisim configurations
     :rtype: List[str]
     """
-    config_dict = load_hisim_config(base_config_path)
+    config = base_config["system_config_"]
+    if parameter_name in base_config["system_config_"]:
+        config_key = "system_config_"
+    elif parameter_name in base_config["archetype_config_"]:
+        # if the parameter is not in the system_config, look in the archetype_config instead
+        config_key = "archetype_config_"
+    else:
+        assert False, f"Invalid parameter name: {parameter_name}"
 
     # insert all values for the parameter and thus create different HiSim configurations
-    config = config_dict["system_config_"]
-    if parameter_name not in config:
-        # if the parameter is not in the system_config, look in the archetype_config instead
-        config = config_dict["archetype_config_"]
-    assert parameter_name in config, f"Invalid parameter name: {parameter_name}"
-
     all_hisim_configs = []
     for value in parameter_values:
+        # clone the config dict
+        new_config = copy.deepcopy(base_config)
+        config = new_config[config_key]
+
         # set the respective value
         config[parameter_name] = value
         # optionally set boolean flags for this parameter if the value is not 0
@@ -107,7 +107,7 @@ def create_hisim_configs_from_parameter_value_list(
             for attribute in boolean_attributes:
                 config[attribute] = value != 0
         # append the config string to the list
-        all_hisim_configs.append(json.dumps(config_dict))
+        all_hisim_configs.append(new_config)
     return all_hisim_configs
 
 
@@ -174,6 +174,9 @@ def multiple_parameter_sensitivity_analysis(
     if boolean_attributes is None:
         boolean_attributes = {}
 
+    # read the base config from file        
+    config_dict = load_hisim_config(base_config_path)
+
     all_hisim_configs: List[str] = []
     for parameter_name, parameter_values in parameter_value_ranges.items():
         # get the hisim configs with the respective values
@@ -185,8 +188,9 @@ def multiple_parameter_sensitivity_analysis(
         )
         # put all hisim configs in a single list to calculate them all in parallel
         all_hisim_configs.extend(hisim_configs)
-
-    all_results = calculate_multiple_hisim_requests(all_hisim_configs)
+    
+    hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
+    all_results = calculate_multiple_hisim_requests(hisim_config_strings)
     print(f"Retrieved results from {len(all_results)} HiSim requests")
     assert all(
         isinstance(r, ResultDelivery) for r in all_results
@@ -297,5 +301,5 @@ def main():
 
 
 if __name__ == "__main__":
-    boolean_parameter_test()
-    # main()
+    # boolean_parameter_test()
+    main()
