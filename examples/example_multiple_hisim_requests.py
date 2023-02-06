@@ -5,22 +5,24 @@ import errno
 import itertools
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
-from examples.postprocessing.sensitivity_plots import (  # type: ignore
+import pandas as pd
+
+from postprocessing.sensitivity_plots import (  # type: ignore
     load_hisim_config, read_base_config_values)
 from utspclient.client import (request_time_series_and_wait_for_delivery,
                                send_request)
 from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
 
 # Define UTSP connection parameters
-URL = "http://localhost:443/api/v1/profilerequest"
-API_KEY = ""
+URL = "http://134.94.131.167:443/api/v1/profilerequest"
+API_KEY = "OrjpZY93BcNWw8lKaMp0BEchbCc"
 
 
 def calculate_multiple_hisim_requests(
-    hisim_configs: List[str], return_exceptions: bool = False
-) -> List[ResultDelivery | Exception]:
+    hisim_configs: List[str], return_exceptions: bool = False, result_files = None,
+) -> List[Union[ResultDelivery, Exception]]:
     """
     Sends multiple hisim requests for parallel calculation and collects
     their results.
@@ -37,7 +39,8 @@ def calculate_multiple_hisim_requests(
         TimeSeriesRequest(
             config,
             "hisim",
-            required_result_files=dict.fromkeys(["kpi_config.json"]),
+            guid="1",
+            required_result_files=result_files or {},
         )
         for config in hisim_configs
     ]
@@ -48,7 +51,7 @@ def calculate_multiple_hisim_requests(
         send_request(URL, request, API_KEY)
 
     # Collect the results
-    results: List[ResultDelivery | Exception] = []
+    results: List[Union[ResultDelivery, Exception]] = []
     for request in all_requests:
         # This function waits until the request has been processed and the results are available
         try:
@@ -84,7 +87,7 @@ def create_hisim_configs_from_parameter_value_list(
     :return: a list of hisim configurations
     :rtype: List[str]
     """
-    config = base_config["system_config_"]
+
     if parameter_name in base_config["system_config_"]:
         config_key = "system_config_"
     elif parameter_name in base_config["archetype_config_"]:
@@ -183,14 +186,14 @@ def multiple_parameter_sensitivity_analysis(
         hisim_configs = create_hisim_configs_from_parameter_value_list(
             parameter_name,
             parameter_values,
-            base_config_path,
+            config_dict,
             boolean_attributes.get(parameter_name, None),
         )
         # put all hisim configs in a single list to calculate them all in parallel
         all_hisim_configs.extend(hisim_configs)
     
     hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
-    all_results = calculate_multiple_hisim_requests(hisim_config_strings)
+    all_results = calculate_multiple_hisim_requests(hisim_config_strings, result_files=dict.fromkeys(["kpi_config.json"]))
     print(f"Retrieved results from {len(all_results)} HiSim requests")
     assert all(
         isinstance(r, ResultDelivery) for r in all_results
@@ -206,6 +209,50 @@ def multiple_parameter_sensitivity_analysis(
         # process all requests and retrieve the results
 
         save_all_results(parameter_name, parameter_values, results_for_one_param)  # type: ignore
+
+
+def building_code_and_heating_system_calculations(building_codes: List[str], heating_systems: List[str]):
+    
+    base_config_path = "examples\\input data\\hisim_config.json"
+    config_dict = load_hisim_config(base_config_path)
+
+    num_requests = len(building_codes) * len(heating_systems)
+    print(f"Creating {num_requests} HiSim requests")
+
+    # insert all values for the parameter and thus create different HiSim configurations
+    config = config_dict["archetype_config_"]
+
+    all_hisim_configs = []
+    for building_code in building_codes:
+        config["building_code"] = building_code
+        for heating_system in heating_systems:
+            config["heating_system_installed"] = heating_system
+            config["water_heating_system_installed"] = heating_system
+            # append the config string to the list
+            all_hisim_configs.append(json.dumps(config_dict))
+
+    all_results = calculate_multiple_hisim_requests(
+        all_hisim_configs, return_exceptions=True
+    )
+
+    base_folder = f"./results/hisim_building_code_calculations"
+    digits = len(str(num_requests))
+    for i, result in enumerate(all_results):
+        folder_name = str(i).zfill(digits)
+        result_folder_path = os.path.join(base_folder, folder_name)
+        create_dir_if_not_exists(result_folder_path)
+        if isinstance(result, Exception):
+            # the calculation failed: save the error message
+            error_message_file = os.path.join(result_folder_path, "exception.txt")
+            with open(error_message_file, "w", encoding="utf-8") as error_file:
+                error_file.write(str(result))
+        else:
+            # save all result files
+            save_single_result(result_folder_path, result)
+        # additionally save the config
+        config_file_path = os.path.join(result_folder_path, "hisim_config.json")
+        with open(config_file_path, "w", encoding="utf-8") as config_file:
+            config_file.write(all_hisim_configs[i])
 
 
 def boolean_parameter_test():
@@ -269,11 +316,15 @@ def boolean_parameter_test():
 
 
 def main():
-    with open("examples\\german_tabula_codes.csv", "r") as file:
-        building_codes = file.read().split("\n")
+    codes = pd.read_csv("examples\\tabula_codes.csv", sep=";", comment="#") # skiprows=[0]
+    building_codes = list(codes["Code_BuildingVariant"])
+    building_codes = building_codes[:3]
 
-    building_codes = building_codes[:15]
+    heating_systems = ["HeatPump", "DistrictHeating"]
 
+    building_code_and_heating_system_calculations(building_codes=building_codes, heating_systems=heating_systems)
+
+    # --- Sensitivity Analysis
     base_config_path = "examples\\input data\\hisim_config.json"
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {
@@ -285,7 +336,6 @@ def main():
             "DE.N.SFH.05.Gen.ReEx.001.002",
             "DE.N.SFH.10.Gen.ReEx.001.002",
         ]
-        # "building_code": building_codes,
     }
 
     # additional boolean attributes that must be set depending on
@@ -295,9 +345,9 @@ def main():
         "buffer_volume": ["buffer_included"],
     }
 
-    multiple_parameter_sensitivity_analysis(
-        base_config_path, parameter_value_ranges, boolean_attributes
-    )
+    # multiple_parameter_sensitivity_analysis(
+    #     base_config_path, parameter_value_ranges, boolean_attributes
+    # )
 
 
 if __name__ == "__main__":
