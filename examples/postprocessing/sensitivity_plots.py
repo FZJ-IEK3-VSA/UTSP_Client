@@ -201,7 +201,7 @@ def plot_sensitivity_results(
             loc="right", axes=pary, offset=(line_index * 60, 0)
         )
         pary.axis["right"].toggle(all=True)
-        pary.set_ylabel(f"{kpi_name} ({parameter_name})")
+        pary.set_ylabel(f"{kpi_name} ({parameter_name}) [%]")
         y_original = host.get_yticks()
         pary.set_yticks(y_original)
         pary.set_ybound(host.get_ybound())
@@ -212,7 +212,12 @@ def plot_sensitivity_results(
             loc="top", axes=parx, offset=(0, line_index * 45)
         )
         parx.axis["top"].toggle(all=True)
-        parx.set_xlabel(parameter_name)
+        unit = ""
+        if parameter_name == 'battery_capacity':
+            unit = " [kWh]"
+        elif parameter_name == 'pv_peak_power':
+            unit = " [kWp]"
+        parx.set_xlabel(parameter_name + unit)
         x_original = host.get_xticks()
         parx.set_xticks(x_original)
         parx.set_xbound(host.get_xbound())
@@ -225,6 +230,9 @@ def plot_sensitivity_results(
             kpi_values=curves[line_index].kpi_values_absolute,
             base_index=base_indices[line_index],
         )
+
+        if unit == " [kWp]":
+            x_tick_values = [elem*1e-3 for elem in x_tick_values]
 
         parx.set_xticklabels([str(round(value, 1)) for value in x_tick_values])
         pary.set_yticklabels([str(round(value, 1)) for value in y_tick_values])
@@ -276,14 +284,14 @@ def plot_building_codes_results(
 
 
 def main():
-    path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
-    base_config_path = "examples\\input data\\hisim_config.json"
-    # base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
-    # path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_buffer"
+    # path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
+    # base_config_path = "examples\\input data\\hisim_config.json"
+    base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
+    path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
 
     all_kpis = read_sensitivity_results(path, False)
 
-    plot_sensitivity_results(all_kpis, base_config_path, "self_consumption_rate")
+    plot_sensitivity_results(all_kpis, base_config_path, "autarky_rate")
 
     # plot_building_codes_results(all_kpis, "self_consumption_rate")
 
