@@ -257,10 +257,14 @@ def boolean_parameter_test():
     base_folder = f"./results/hisim_boolean_parameter_test"
     digits = len(str(num_requests))
     for i, result in enumerate(all_results):
+        # check if the calculation failed
+        error_occurred = isinstance(result, Exception)
         folder_name = str(i).zfill(digits)
+        if error_occurred:
+            folder_name += " - error"
         result_folder_path = os.path.join(base_folder, folder_name)
         create_dir_if_not_exists(result_folder_path)
-        if isinstance(result, Exception):
+        if error_occurred:
             # the calculation failed: save the error message
             error_message_file = os.path.join(result_folder_path, "exception.txt")
             with open(error_message_file, "w", encoding="utf-8") as error_file:
