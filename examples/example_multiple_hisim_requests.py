@@ -316,7 +316,7 @@ def boolean_parameter_test():
 
 
 def main():
-    codes = pd.read_csv("examples\\tabula_codes.csv", sep=";", comment="#") # skiprows=[0]
+    codes = pd.read_csv("examples\\input data\\tabula_codes.csv", sep=";", comment="#") # skiprows=[0]
     building_codes = list(codes["Code_BuildingVariant"])
     building_codes = building_codes[:3]
 
