@@ -92,18 +92,15 @@ def request_time_series_and_wait_for_delivery(
     if isinstance(request, TimeSeriesRequest):
         request = request.to_json()  # type: ignore
     status = CalculationStatus.UNKNOWN
-    wait_count = 0
+    print("Waiting for the results. This might take a while.")
     while status not in [
         CalculationStatus.INDATABASE,
         CalculationStatus.CALCULATIONFAILED,
     ]:
         reply = send_request(url, request, api_key)
         status = reply.status
-        wait_count += 1
         if status != CalculationStatus.INDATABASE:
             time.sleep(1)
-            print("waiting for " + str(wait_count))
     ts = get_result(reply)
     assert ts is not None, "No time series was delivered"
-    print("finished")
     return ts

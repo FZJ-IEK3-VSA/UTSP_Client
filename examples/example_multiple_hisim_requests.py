@@ -2,6 +2,8 @@
 
 from typing import List, Union
 
+import tqdm
+
 from utspclient.client import request_time_series_and_wait_for_delivery, send_request
 from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
 
@@ -37,14 +39,16 @@ def calculate_multiple_hisim_requests(
         for config in hisim_configs
     ]
 
+    print(f"Sending {len(all_requests)} requests")
     # Send all requests to the UTSP
-    for request in all_requests:
+    for request in tqdm.tqdm(all_requests):
         # This function just sends the request and immediately returns so the other requests don't have to wait
         send_request(URL, request, API_KEY)
 
+    print("Collecting results.")
     # Collect the results
     results: List[Union[ResultDelivery, Exception]] = []
-    for request in all_requests:
+    for request in tqdm.tqdm(all_requests):
         try:
             # This function waits until the request has been processed and the results are available
             result = request_time_series_and_wait_for_delivery(URL, request, API_KEY)
