@@ -5,6 +5,7 @@ pandas
 numpy
 matplotlib
 mypy
+tqdm
 
 # types
 types-requests
