@@ -78,24 +78,64 @@ def create_dir_if_not_exists(result_folder_name: str):
             raise
 
 
-def save_single_result(result_folder_name: str, result: ResultDelivery):
+def save_single_result(
+    result_folder_name: str,
+    result: ResultDelivery | Exception,
+    config: Optional[Dict] = None,
+    mark_error_folder: bool = True,
+):
+    """
+    Saves the result files of a single calculation in the specified folder,
+    along with the input file that was used. If the calculation failed, the
+    error message is saved in a file.
+
+    :param result_folder_name: path of the result folder
+    :type result_folder_name: str
+    :param result: result object from the UTSP, or an exception
+    :type result: ResultDelivery | Exception
+    :param config: the config dict that was used as input, defaults to None
+    :type config: Optional[Dict], optional
+    :param mark_error_folder: if True, the name of the folder will be changed
+        for failed calculations to facilitate finding them; defaults to True
+    :type mark_error_folder: bool, optional
+    """
+    error_occurred = isinstance(result, Exception)
+    if error_occurred and mark_error_folder:
+        result_folder_name += " - error"
     create_dir_if_not_exists(result_folder_name)
-    # save all result files in the folder
-    for filename, content in result.data.items():
-        filepath = os.path.join(result_folder_name, filename)
-        with open(filepath, "wb") as file:
-            file.write(content)
+    if error_occurred:
+        # the calculation failed: save the error message
+        error_message_file = os.path.join(result_folder_name, "exception.txt")
+        with open(error_message_file, "w", encoding="utf-8") as error_file:
+            error_file.write(str(result))
+    else:
+        # save all result files in the folder
+        for filename, content in result.data.items():
+            filepath = os.path.join(result_folder_name, filename)
+            with open(filepath, "wb") as file:
+                file.write(content)
+    if config:
+        # additionally save the config
+        config_file_path = os.path.join(result_folder_name, "hisim_config.json")
+        with open(config_file_path, "w", encoding="utf-8") as config_file:
+            config_file.write(config)
 
 
 def save_all_results(
-    parameter_name: str, parameter_values: List[float], results: List[ResultDelivery]
+    parameter_name: str,
+    parameter_values: List[float],
+    results: List[ResultDelivery],
+    configs: List[Dict],
 ):
+    assert len(results) == len(
+        configs
+    ), "Number of results does not match number of configs"
     for i, value in enumerate(parameter_values):
         # save result files
         result_folder_name = (
             f"./results/hisim_sensitivity_analysis/{parameter_name}-{value}"
         )
-        save_single_result(result_folder_name, results[i])
+        save_single_result(result_folder_name, results[i], configs[i])
 
 
 def multiple_parameter_sensitivity_analysis(
@@ -149,11 +189,11 @@ def multiple_parameter_sensitivity_analysis(
 
     hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
     all_results = calculate_multiple_hisim_requests(
-        hisim_config_strings, result_files=dict.fromkeys(["kpi_config.json"])
+        hisim_config_strings, return_exceptions=True
     )
     print(f"Retrieved results from {len(all_results)} HiSim requests")
     assert all(
-        isinstance(r, ResultDelivery) for r in all_results
+        isinstance(r, (ResultDelivery, Exception)) for r in all_results
     ), "Found an invalid result object"
 
     index = 0
@@ -161,11 +201,12 @@ def multiple_parameter_sensitivity_analysis(
         # for each parameter value, there is one result object
         num_results = len(parameter_values)
         results_for_one_param = all_results[index : index + num_results]
+        configs_for_one_param = hisim_config_strings[index : index + num_results]
         index += num_results
         print(f"Retrieved {num_results} results for parameter {parameter_name}")
         # process all requests and retrieve the results
 
-        save_all_results(parameter_name, parameter_values, results_for_one_param)  # type: ignore
+        save_all_results(parameter_name, parameter_values, results_for_one_param, configs_for_one_param)  # type: ignore
 
 
 def building_code_and_heating_system_calculations(
@@ -222,7 +263,7 @@ def boolean_parameter_test():
         "smart_devices_included",
         "buffer_included",
         "battery_included",
-        # "heatpump_included",
+        "heatpump_included",
         # "chp_included",
         # "h2_storage_included",
         # "electrolyzer_included",
@@ -254,69 +295,47 @@ def boolean_parameter_test():
         all_hisim_configs, return_exceptions=True
     )
 
+    # save all result files and error messages
     base_folder = f"./results/hisim_boolean_parameter_test"
     digits = len(str(num_requests))
     for i, result in enumerate(all_results):
-        # check if the calculation failed
-        error_occurred = isinstance(result, Exception)
         folder_name = str(i).zfill(digits)
-        if error_occurred:
-            folder_name += " - error"
         result_folder_path = os.path.join(base_folder, folder_name)
-        create_dir_if_not_exists(result_folder_path)
-        if error_occurred:
-            # the calculation failed: save the error message
-            error_message_file = os.path.join(result_folder_path, "exception.txt")
-            with open(error_message_file, "w", encoding="utf-8") as error_file:
-                error_file.write(str(result))
-        else:
-            # save all result files
-            save_single_result(result_folder_path, result)
-        # additionally save the config
-        config_file_path = os.path.join(result_folder_path, "hisim_config.json")
-        with open(config_file_path, "w", encoding="utf-8") as config_file:
-            config_file.write(all_hisim_configs[i])
+        save_single_result(result_folder_path, result, all_hisim_configs[i])
 
 
-def main():
-    codes = pd.read_csv(
-        "examples\\input data\\tabula_codes.csv", sep=";", comment="#"
-    )  # skiprows=[0]
-    building_codes = list(codes["Code_BuildingVariant"])
-    building_codes = building_codes[:3]
+def sensitivity_analysis():
+    # heating_systems = ["HeatPump", "DistrictHeating"]
 
-    heating_systems = ["HeatPump", "DistrictHeating"]
+    # building_code_and_heating_system_calculations(
+    #     building_codes=building_codes, heating_systems=heating_systems
+    # )
 
-    building_code_and_heating_system_calculations(
-        building_codes=building_codes, heating_systems=heating_systems
-    )
+    building_codes = pd.read_csv(
+        os.path.join("examples", "input data", "tabula_buildings.csv"),
+        encoding="utf-8",
+    )["Number"].to_list()
 
-    # --- Sensitivity Analysis
+    # determine the base config to be used
     base_config_path = "examples\\input data\\hisim_config.json"
+
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {
-        # "pv_peak_power": [1e3, 2e3, 5e3, 10e3],
-        # "battery_capacity": [1, 2, 5, 10],
-        # "buffer_volume": [0, 80, 100, 150, 200, 500, 1000],
-        "building_code": [
-            "DE.N.SFH.01.Gen.ReEx.001.002",
-            "DE.N.SFH.05.Gen.ReEx.001.002",
-            "DE.N.SFH.10.Gen.ReEx.001.002",
-        ]
+        "building_code": building_codes,
     }
 
     # additional boolean attributes that must be set depending on
     # the value of the continuous parameter
     boolean_attributes = {
-        "battery_capacity": ["battery_included"],
-        "buffer_volume": ["buffer_included"],
+        # "battery_capacity": ["battery_included"],
+        # "buffer_volume": ["buffer_included"],
     }
 
-    # multiple_parameter_sensitivity_analysis(
-    #     base_config_path, parameter_value_ranges, boolean_attributes
-    # )
+    multiple_parameter_sensitivity_analysis(
+        base_config_path, parameter_value_ranges, boolean_attributes
+    )
 
 
 if __name__ == "__main__":
-    # boolean_parameter_test()
-    main()
+    boolean_parameter_test()
+    # sensitivity_analysis()

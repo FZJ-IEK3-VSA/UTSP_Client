@@ -1,15 +1,16 @@
 {
     "system_config_": {
-        "pv_included": true,
-        "pv_peak_power": 5000,
+        "pv_included": false,
+        "pv_peak_power": 10000.0,
         "smart_devices_included": false,
         "buffer_included": false,
-        "buffer_volume": 150,
+        "buffer_volume": 1,
         "battery_included": false,
-        "battery_capacity": 5,
+        "battery_capacity": 20.0,
         "heatpump_included": false,
-        "chp_included": true,
-        "chp_power": 5,
+        "heatpump_power": 1.0,
+        "chp_included": false,
+        "chp_power": 12,
         "h2_storage_included": false,
         "h2_storage_size": 100,
         "electrolyzer_included": false,
@@ -26,8 +27,23 @@
         "api_key": "OrjpZY93BcNWw8lKaMp0BEchbCc"
     },
     "archetype_config_": {
+        "occupancy_profile_utsp": null,
+        "occupancy_profile": "AVG",
+        "building_code": "ES.ME.AB.01.Gen.ReEx.001.001",
+        "absolute_conditioned_floor_area": null,
         "water_heating_system_installed": "DistrictHeating",
         "heating_system_installed": "DistrictHeating",
-        "building_code": "DE.N.SFH.05.Gen.ReEx.001.002"
+        "mobility_set": {
+            "Name": "Bus and one 30 km/h Car",
+            "Guid": {
+                "StrVal": "6ac74bd0-bacd-4b39-b84a-dc7ae16702c9"
+            }
+        },
+        "mobility_distance": {
+            "Name": "Travel Route Set for 05km Commuting Distance",
+            "Guid": {
+                "StrVal": "a60747ab-3427-43f8-9a61-3233f332075a"
+            }
+        }
     }
 }
