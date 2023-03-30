@@ -51,7 +51,7 @@ def calculate_multiple_hisim_requests(
     for request in tqdm.tqdm(all_requests):
         try:
             # This function waits until the request has been processed and the results are available
-            result = request_time_series_and_wait_for_delivery(URL, request, API_KEY)
+            result = request_time_series_and_wait_for_delivery(URL, request, API_KEY, quiet=True)
             results.append(result)
         except Exception as e:
             if return_exceptions:

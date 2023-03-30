@@ -76,6 +76,7 @@ def request_time_series_and_wait_for_delivery(
     url: str,
     request: Union[str, TimeSeriesRequest],
     api_key: str = "",
+    quiet: bool = False,
 ) -> ResultDelivery:
     """
     Requests a single time series from the UTSP server from the specified time series provider
@@ -86,13 +87,16 @@ def request_time_series_and_wait_for_delivery(
     :type request: Union[str, TimeSeriesRequest]
     :param api_key: API key for accessing the UTSP, defaults to ""
     :type api_key: str, optional
+    :param quiet: whether no console outputs should be produced, defaults to False
+    :type quiet: bool, optional
     :return: The requested result data
     :rtype: ResultDelivery
     """
     if isinstance(request, TimeSeriesRequest):
         request = request.to_json()  # type: ignore
     status = CalculationStatus.UNKNOWN
-    print("Waiting for the results. This might take a while.")
+    if not quiet:
+        print("Waiting for the results. This might take a while.")
     while status not in [
         CalculationStatus.INDATABASE,
         CalculationStatus.CALCULATIONFAILED,
