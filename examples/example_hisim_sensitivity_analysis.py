@@ -11,7 +11,7 @@ import os
 from typing import Dict, List, Optional
 
 import pandas as pd
-from utspclient.datastructures import ResultDelivery
+from utspclient.datastructures import ResultDelivery, ResultFileRequirement
 
 from postprocessing.sensitivity_plots import (  # type: ignore
     load_hisim_config,
@@ -142,6 +142,7 @@ def multiple_parameter_sensitivity_analysis(
     base_config_path: str,
     parameter_value_ranges: Dict[str, List[float]],
     boolean_attributes: Optional[Dict[str, List[str]]] = None,
+    result_files: Dict = None,
 ):
     """
     Executes a sensitivity analysis for multiple parameters. For each parameter, one
@@ -189,7 +190,9 @@ def multiple_parameter_sensitivity_analysis(
 
     hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
     all_results = calculate_multiple_hisim_requests(
-        hisim_config_strings, return_exceptions=True
+        hisim_config_strings,
+        return_exceptions=True,
+        result_files=result_files,
     )
     print(f"Retrieved results from {len(all_results)} HiSim requests")
     assert all(
@@ -331,11 +334,13 @@ def sensitivity_analysis():
         # "buffer_volume": ["buffer_included"],
     }
 
+    result_files = {"csv_for_housing_data_base.csv": ResultFileRequirement.REQUIRED}
+
     multiple_parameter_sensitivity_analysis(
-        base_config_path, parameter_value_ranges, boolean_attributes
+        base_config_path, parameter_value_ranges, boolean_attributes, result_files
     )
 
 
 if __name__ == "__main__":
-    boolean_parameter_test()
-    # sensitivity_analysis()
+    # boolean_parameter_test()
+    sensitivity_analysis()
