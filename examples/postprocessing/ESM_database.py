@@ -5,25 +5,37 @@ import tqdm
 import sensitivity_plots
 
 def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
+    """Splits header to multiple lines for better understanding of building code.
+
+    Also converts oil and diesel consumption from l to kWh. Therfore a value of
+    10 kWh/l is used. This corresponds to the corresponding heat value (not the calorific value).
+    In addition it cuts the values not relevant for ESM modellers.
+    
+    :param results: Dataframe containing all results
+    :type results: pd.DataFrame
+    :return: DataFrame with new header and right conversions with all the results.
+    :rtype: pd.DataFrame
+    """    
     
     # extract header
-    headerlist = results.columns
+    headerlist = results.columns.to_list()
 
     # extract relevant information for Multi-Index
-    tabulaname = ["TabulaName", "str"] + headerlist[3:]
-    climatezones = ["ClimateZone", "str"] + [elem.split(".")[0] for elem in headerlist[3:] ]
-    housetypes = ["House Type", "str"] + [elem.split(".")[2] for elem in headerlist[3:] ]
-    constructionyears = ["Construction Year", "str"] + [elem.split(".")[3] for elem in headerlist[3:]]
-    rennovationdegrees = ["Rennovation Degree", "str"] + [elem.split(".")[7][:3] for elem in headerlist[3:] ]
+    tabulaname = ["TabulaName", "str"] + headerlist[2:]
+    climatezones = ["ClimateZone", "str"] + [elem.split(".")[0] for elem in headerlist[2:] ]
+    housetypes = ["House Type", "str"] + [elem.split(".")[2] for elem in headerlist[2:] ]
+    constructionyears = ["Construction Year", "str"] + [elem.split(".")[3] for elem in headerlist[2:]]
+    rennovationdegrees = ["Rennovation Degree", "str"] + [elem.split(".")[7][:3] for elem in headerlist[2:] ]
 
     # make multiindex
     results.columns = pd.MultiIndex.from_tuples([(b, c, d, e) for (b, c, d, e) in zip(climatezones, housetypes, constructionyears, rennovationdegrees)],
                                             names=["ClimateZones", "HouseTypes", "ConstructionYear", "RennovationDegree"])
 
     # convert from l to kWh
-    
+    results = results[results.columns[[0, 1, 2, 4, 6]]]
+    results.loc[[0,6,15], results.columns[2:]] *= 10
 
-    # return only relevant data for ESM guys
+    # return only relevant data for ESM guys - skip building validation data from row 18 - 20
     return results.loc[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 21]]
 
 
@@ -78,11 +90,12 @@ def combine_building_code_results(result_folder: str):
 
     # concatenate all columns to a single dataframe and save it as a file
     results = pd.concat(columns, axis=1)
+    results = modify_dataframe(results=results)
     results.to_csv(os.path.join(result_folder, "database_for_ESM.csv"))
 
 
 def main():
-    result_folder = f"./results/hisim_sensitivity_analysis"
+    result_folder = f"./results/hisim_building_code_calculations"
     combine_building_code_results(result_folder)
 
 
