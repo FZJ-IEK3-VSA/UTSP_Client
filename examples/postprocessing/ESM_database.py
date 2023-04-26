@@ -4,6 +4,28 @@ import tqdm
 
 import sensitivity_plots
 
+def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
+    
+    # extract header
+    headerlist = results.columns
+
+    # extract relevant information for Multi-Index
+    tabulaname = ["TabulaName", "str"] + headerlist[3:]
+    climatezones = ["ClimateZone", "str"] + [elem.split(".")[0] for elem in headerlist[3:] ]
+    housetypes = ["House Type", "str"] + [elem.split(".")[2] for elem in headerlist[3:] ]
+    constructionyears = ["Construction Year", "str"] + [elem.split(".")[3] for elem in headerlist[3:]]
+    rennovationdegrees = ["Rennovation Degree", "str"] + [elem.split(".")[7][:3] for elem in headerlist[3:] ]
+
+    # make multiindex
+    results.columns = pd.MultiIndex.from_tuples([(b, c, d, e) for (b, c, d, e) in zip(climatezones, housetypes, constructionyears, rennovationdegrees)],
+                                            names=["ClimateZones", "HouseTypes", "ConstructionYear", "RennovationDegree"])
+
+    # convert from l to kWh
+    
+
+    # return only relevant data for ESM guys
+    return results.loc[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 21]]
+
 
 def combine_building_code_results(result_folder: str):
     """
