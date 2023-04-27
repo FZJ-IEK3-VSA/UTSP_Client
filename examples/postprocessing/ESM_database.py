@@ -46,7 +46,8 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     )
 
     # convert from l to kWh
-    results.loc[[0, 6, 15], results.columns[2:]] *= 10
+    for i in [0, 6, 15]:
+        results.loc[i, results.columns[2:]] *= 10
 
     # return only relevant data for ESM guys - skip building validation data from row 18 - 20
     return results.loc[
