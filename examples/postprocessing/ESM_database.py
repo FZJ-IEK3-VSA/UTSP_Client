@@ -32,7 +32,6 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
                                             names=["ClimateZones", "HouseTypes", "ConstructionYear", "RennovationDegree"])
 
     # convert from l to kWh
-    results = results[results.columns[[0, 1, 2, 4, 6]]]
     results.loc[[0,6,15], results.columns[2:]] *= 10
 
     # return only relevant data for ESM guys - skip building validation data from row 18 - 20
