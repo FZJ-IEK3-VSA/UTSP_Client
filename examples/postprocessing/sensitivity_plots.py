@@ -1,3 +1,6 @@
+"""Creates sensitivity plots for the validation of components
+and buildings in HiSIM."""
+
 from dataclasses import dataclass
 import json
 from os import listdir
@@ -16,9 +19,13 @@ class SensitivityAnalysisCurve:
     Contains relative and absolute parameter and kpi values.
     """
 
+    #: capacities of the involved technology in absolut numbers
     parameter_values_absolute: List[float]
+    #: capacities of the involved technology in relative numbers (compared to the reference size)
     parameter_values_relative: List[float]
+    #: key performance indicator (e. g. self consumption rate or autarky rate) in absolut numbers
     kpi_values_absolute: List[float]
+    #: key performance indicator in relative numbers (compared to reference size)
     kpi_values_relative: List[float]
 
 
@@ -66,6 +73,17 @@ def read_base_config_values(
 def read_sensitivity_results(
     path: str, float_values: bool = True
 ) -> Dict[str, Dict[Union[float, str], Dict[str, float]]]:
+    """Combines results of all calculations in a structured Dictionary.
+
+    :param path: directory of the results from HiSIM calculations of the UTSP
+    :type path: str
+    :param float_values: indicates if technologies of considered technologies are
+    containedin the filname as float, defaults to True
+    :type float_values: bool, optional
+    :return: Dictionary containing all KPI's in the right structure for plotting.
+    :rtype: Dict[str, Dict[Union[float, str], Dict[str, float]]]
+    """    
+
     all_result_folders = listdir(path)
     all_kpis: Dict[str, Dict[Union[float, str], Dict[str, float]]] = {}
     for folder in all_result_folders:
@@ -150,6 +168,16 @@ def plot_sensitivity_results(
     base_config_path: str,
     kpi_name: str,
 ):
+    """Creates a sensitivity star plot for various technologies.
+
+    :param all_kpis: Results of the sensitivity analysis combined in a dictionary.
+    Output of function read_sensitivity_results()
+    :type all_kpis: Dict[str, Dict[float, Dict[str, float]]]
+    :param base_config_path: Directory to the configuration of the reference calculation.
+    :type base_config_path: str
+    :param kpi_name: Selection of the KPI to be plotted (e. g. "autarky_rate" or "self_consumption_rate"s)
+    :type kpi_name: str
+    """    
     # define base values for each parameter that will be varied
     base_values = read_base_config_values(base_config_path, all_kpis.keys())
 
@@ -246,13 +274,18 @@ def plot_sensitivity_results(
 
 def plot_building_codes_results(
     all_kpis: Dict[str, Dict[float, Dict[str, float]]], kpi_name: str
-):
-    """
-    Creates a sensitivity star plot.
+) -> None:
+    """Creates a sensitivity star plot for various building types.
 
-    :param curves: curves to plot
-    :type curves: Dict[str, SensitivityAnalysisCurve]
+    :param all_kpis: Results of the sensitivity analysis combined in a dictionary.
+    Output of function read_sensitivity_results()
+    :type all_kpis: Dict[str, Dict[float, Dict[str, float]]]
+    :param base_config_path: Directory to the configuration of the reference calculation.
+    :type base_config_path: str
+    :param kpi_name: Selection of the KPI to be plotted (e. g. "autarky_rate" or "self_consumption_rate"s)
+    :type kpi_name: str
     """
+
     assert (
         "building_code" in all_kpis and len(all_kpis) == 1
     ), "Invalid configuartion for this plotting function"
@@ -284,6 +317,7 @@ def plot_building_codes_results(
 
 
 def main():
+    """Main execution function."""
     # path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
     # base_config_path = "examples\\input data\\hisim_config.json"
     base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"

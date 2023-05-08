@@ -1,3 +1,7 @@
+"""Combines single output files 'csv_for_housing_database.csv' of all HiSIM 
+evaluations in a directory to one common csv file in the format
+suitable for ESM modellers."""
+
 import os
 import pandas as pd
 import tqdm
@@ -111,6 +115,7 @@ def combine_building_code_results(result_folder: str):
 
 
 def main():
+    """Main execution function."""
     result_folder = f"./results/hisim_building_code_calculations"
     combine_building_code_results(result_folder)
 
