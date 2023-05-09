@@ -11,3 +11,7 @@ tqdm
 types-requests
 pandas-stubs
 data-science-types
+
+# documentation
+sphinx
+sphinx-rtd-theme

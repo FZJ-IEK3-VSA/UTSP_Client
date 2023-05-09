@@ -69,8 +69,14 @@ def create_hisim_configs_from_parameter_value_list(
     return all_hisim_configs
 
 
-def create_dir_if_not_exists(result_folder_name: str):
-    # Create the directory if it does not exist
+def create_dir_if_not_exists(result_folder_name: str) -> None:
+    """Creates the result directory if it does not exist already.
+
+    :param result_folder_name: Directory where the results of the HiSIM
+    calculations are stored.
+    :type result_folder_name: str
+    """
+
     try:
         os.makedirs(result_folder_name)
     except OSError as exc:
@@ -214,7 +220,16 @@ def multiple_parameter_sensitivity_analysis(
 
 def building_code_and_heating_system_calculations(
     building_codes: List[str], heating_systems: List[str]
-):
+) -> None:
+    """Creates HiSIM requests for various buildings with
+    different heating systems.
+
+    :param building_codes: Contains all building types to be calculated by HiSIM.
+    :type building_codes: List[str]
+    :param heating_systems: Contains all heating systems to be calculated in combination
+    with the indicated building types.
+    :type heating_systems: List[str]
+    """    
 
     base_config_path = "examples\\input data\\hisim_config.json"
     config_dict = load_hisim_config(base_config_path)
@@ -258,7 +273,12 @@ def building_code_and_heating_system_calculations(
             config_file.write(all_hisim_configs[i])
 
 
-def boolean_parameter_test():
+def boolean_parameter_test() -> None:
+    """Varies all indicated boolean Parameters of the system configuration,
+    simulates it by sending HiSIM requests to the UTSP and saves the results.
+    
+    The HiSIM configuration of the reference technology/building should be lacated in 
+    examples/input data/"""    
     base_config_path = "examples\\input data\\hisim_config.json"
     # parameter ranges for full boolean parameter test
     parameters = [
@@ -308,6 +328,11 @@ def boolean_parameter_test():
 
 
 def sensitivity_analysis():
+    """Varies all indicated discrete Parameters of the system configuration,
+    simulates it by sending HiSIM requests to the UTSP and saves the results.
+    
+    The HiSIM configuration of the reference technology/building should be lacated in 
+    examples/input data/""" 
     # heating_systems = ["HeatPump", "DistrictHeating"]
 
     # building_code_and_heating_system_calculations(
@@ -342,5 +367,6 @@ def sensitivity_analysis():
 
 
 if __name__ == "__main__":
+    """Main execution function."""
     # boolean_parameter_test()
     sensitivity_analysis()
