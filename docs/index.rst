@@ -12,7 +12,7 @@
 Welcome to UTSP Client's documentation!
 =======================================
 This is a client library for accessing the universal time series provider (UTSP) server that works as a distributed job manager for time series generation tools.
-It includes exampels on how to use the UTSP to distirbute many HiSIM calculation or several LPG evaluations, collect and filter the results, or even analyse them.
+It includes exampels on how to use the UTSP to distribute many HiSIM calculation or several LPG evaluations, collect and filter the results, or even analyse them.
 
 .. toctree::
    :maxdepth: 1
@@ -61,6 +61,6 @@ This project has received funding from the European Union’s Horizon 2020 resea
 
 License
 =========================================================
-HiSim Building Sizer is distributed under `MIT License <https://github.com/FZJ-IEK3-VSA/HiSim-Building-Sizer/blob/main/LICENSE>`_ .
+UTSP Client is distributed under `MIT License <https://github.com/FZJ-IEK3-VSA/UTSP_Client/blob/main/LICENSE>`_ .
 
 Copyright (C) 2022 FZ Jülich - IEK 3

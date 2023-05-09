@@ -1,7 +1,7 @@
 build\_new\_image
 -------------------------------------------------
 
-.. automodule:: examples.postprocessing.ESM_database
+.. automodule:: examples.build_new_image
    :members:
    :undoc-members:
    :show-inheritance:
@@ -49,7 +49,7 @@ example\_shutdown
 example\_smelpg
 -------------------------------------------------
 
-.. automodule:: examples.example_sme_lpg
+.. automodule:: examples.example_smelpg
    :members:
    :undoc-members:
    :show-inheritance:
@@ -63,7 +63,7 @@ example\_weather\_provider
    :show-inheritance:
 
 Postprocessing
------------
+-------------------------------------------------
 
 .. toctree::
    :maxdepth: 1
