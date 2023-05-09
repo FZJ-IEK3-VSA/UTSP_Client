@@ -12,12 +12,14 @@
 Welcome to UTSP Client's documentation!
 =======================================
 This is a client library for accessing the universal time series provider (UTSP) server that works as a distributed job manager for time series generation tools.
+It includes exampels on how to use the UTSP to distirbute many HiSIM calculation or several LPG evaluations, collect and filter the results, or even analyse them.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    generated/modules
+   generated/example_collection
 
 
 Documentation Reference
@@ -42,6 +44,23 @@ We are the `Institute of Energy and Climate Research - Techno-economic Systems A
 .. figure:: https://www.4wardenergy.at/typo3conf/ext/gzsw/Resources/Public/Images/4wardEnergyLogo.png
    :target: https://www.4wardenergy.at/en
    :align: center
-   :width: 400px
+   :width: 200px
 
 `4ward Energy Research GmbH <https://www.4wardenergy.at/en>`_ contributes to the UTSP Client by the implementation of the sensitivity analysis example.
+
+Acknowledgement
+=========================================================
+This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 891943. 
+
+.. figure:: ../logos/eulogo.png
+   :width: 200px
+
+.. figure:: ../logos/whylogo.jpg
+   :target: https://www.why-h2020.eu
+   :width: 200px
+
+License
+=========================================================
+HiSim Building Sizer is distributed under `MIT License <https://github.com/FZJ-IEK3-VSA/HiSim-Building-Sizer/blob/main/LICENSE>`_ .
+
+Copyright (C) 2022 FZ Jülich - IEK 3

@@ -1,18 +1,4 @@
-utspclient package
-==================
-
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   utspclient.helpers
-
-Submodules
-----------
-
-utspclient.client module
+Client
 ------------------------
 
 .. automodule:: utspclient.client
@@ -20,7 +6,7 @@ utspclient.client module
    :undoc-members:
    :show-inheritance:
 
-utspclient.datastructures module
+DataStructures
 --------------------------------
 
 .. automodule:: utspclient.datastructures
@@ -28,10 +14,18 @@ utspclient.datastructures module
    :undoc-members:
    :show-inheritance:
 
-utspclient.result\_file\_filters module
+Result Filter
 ---------------------------------------
 
 .. automodule:: utspclient.result_file_filters
    :members:
    :undoc-members:
    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   utspclient.helpers

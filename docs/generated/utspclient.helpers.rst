@@ -1,10 +1,4 @@
-utspclient.helpers package
-==========================
-
-Submodules
-----------
-
-utspclient.helpers.lpg\_helper module
+Helpers from LoadProfileGenerator
 -------------------------------------
 
 .. automodule:: utspclient.helpers.lpg_helper
@@ -12,7 +6,7 @@ utspclient.helpers.lpg\_helper module
    :undoc-members:
    :show-inheritance:
 
-utspclient.helpers.lpgdata module
+Data from LoadProfileGenerator
 ---------------------------------
 
 .. automodule:: utspclient.helpers.lpgdata
@@ -20,7 +14,7 @@ utspclient.helpers.lpgdata module
    :undoc-members:
    :show-inheritance:
 
-utspclient.helpers.lpgpythonbindings module
+Python Bindings of LoadProfileGenerator
 -------------------------------------------
 
 .. automodule:: utspclient.helpers.lpgpythonbindings
