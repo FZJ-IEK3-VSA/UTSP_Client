@@ -14,6 +14,14 @@ example\_hisim\_sensitivity\_analysis
    :undoc-members:
    :show-inheritance:
 
+example\_hisim
+-------------------------------------------------
+
+.. automodule:: examples.example_hisim
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 example\_lpg
 -------------------------------------------------
 
