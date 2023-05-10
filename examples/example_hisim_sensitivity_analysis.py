@@ -73,7 +73,7 @@ def create_dir_if_not_exists(result_folder_name: str) -> None:
     """Creates the result directory if it does not exist already.
 
     :param result_folder_name: Directory where the results of the HiSIM
-    calculations are stored.
+                               calculations are stored.
     :type result_folder_name: str
     """
 
@@ -221,15 +221,16 @@ def multiple_parameter_sensitivity_analysis(
 def building_code_and_heating_system_calculations(
     building_codes: List[str], heating_systems: List[str]
 ) -> None:
-    """Creates HiSIM requests for various buildings with
+    """
+    Creates HiSIM requests for various buildings with
     different heating systems.
 
     :param building_codes: Contains all building types to be calculated by HiSIM.
     :type building_codes: List[str]
     :param heating_systems: Contains all heating systems to be calculated in combination
-    with the indicated building types.
+                            with the indicated building types.
     :type heating_systems: List[str]
-    """    
+    """
 
     base_config_path = "examples\\input data\\hisim_config.json"
     config_dict = load_hisim_config(base_config_path)

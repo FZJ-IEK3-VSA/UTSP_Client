@@ -78,7 +78,7 @@ def read_sensitivity_results(
     :param path: directory of the results from HiSIM calculations of the UTSP
     :type path: str
     :param float_values: indicates if technologies of considered technologies are
-    containedin the filname as float, defaults to True
+                         containedin the filname as float, defaults to True
     :type float_values: bool, optional
     :return: Dictionary containing all KPI's in the right structure for plotting.
     :rtype: Dict[str, Dict[Union[float, str], Dict[str, float]]]
@@ -171,7 +171,7 @@ def plot_sensitivity_results(
     """Creates a sensitivity star plot for various technologies.
 
     :param all_kpis: Results of the sensitivity analysis combined in a dictionary.
-    Output of function read_sensitivity_results()
+                     Output of function read_sensitivity_results()
     :type all_kpis: Dict[str, Dict[float, Dict[str, float]]]
     :param base_config_path: Directory to the configuration of the reference calculation.
     :type base_config_path: str
@@ -278,7 +278,7 @@ def plot_building_codes_results(
     """Creates a sensitivity star plot for various building types.
 
     :param all_kpis: Results of the sensitivity analysis combined in a dictionary.
-    Output of function read_sensitivity_results()
+                     Output of function read_sensitivity_results()
     :type all_kpis: Dict[str, Dict[float, Dict[str, float]]]
     :param base_config_path: Directory to the configuration of the reference calculation.
     :type base_config_path: str
