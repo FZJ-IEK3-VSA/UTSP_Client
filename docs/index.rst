@@ -52,7 +52,6 @@ Acknowledgement
 =========================================================
 This work was supported by the Helmholtz Association in the context of the `Energy System Design <https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/>` program.
 
-<a href="https://www.helmholtz.de/en/"><img src="https://www.helmholtz.de/fileadmin/user_upload/05_aktuelles/Marke_Design/logos/HG_LOGO_S_ENG_RGB.jpg" alt="Helmholtz Logo" width="200px" style="float:right"></a>
 .. figure:: https://www.helmholtz.de/fileadmin/user_upload/05_aktuelles/Marke_Design/logos/HG_LOGO_S_ENG_RGB.jpg
    :target: https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/
    :width: 200px
