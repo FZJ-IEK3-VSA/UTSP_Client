@@ -31,3 +31,9 @@ We are the <a href="https://www.fz-juelich.de/en/iek/iek-3">Institute of Energy 
 This work was supported by the Helmholtz Association in the context of the ["Energy System Design"](https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/) program.
 
 <a href="https://www.helmholtz.de/en/"><img src="https://www.helmholtz.de/fileadmin/user_upload/05_aktuelles/Marke_Design/logos/HG_LOGO_S_ENG_RGB.jpg" alt="Helmholtz Logo" width="200px" style="float:right"></a>
+
+This work has also received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 891943. 
+
+<img src="logos/eulogo.png" alt="EU Logo" width="200px" style="float:right"></a>
+
+<a href="https://www.why-h2020.eu/"><img src="logos/whylogo.jpg" alt="WHY Logo" width="200px" style="float:right"></a>
