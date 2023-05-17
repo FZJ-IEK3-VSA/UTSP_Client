@@ -122,7 +122,7 @@ def calculate_multiple_requests(
     quiet: bool = False,
 ) -> List[Union[ResultDelivery, Exception]]:
     """
-    Sends multiple calculation requests to the UTSP and collects the results. The 
+    Sends multiple calculation requests to the UTSP and collects the results. The
     requests can be calculated in parallel.
 
     :param url: URL of the UTSP server
@@ -174,3 +174,15 @@ def calculate_multiple_requests(
     if not quiet:
         print(f"Retrieved all results. Number of failed requests: {error_count}")
     return results
+
+
+def shutdown(url: str, api_key: str = ""):
+    """
+    Shuts down all UTSP workers connected to the server.
+
+    :param url: URL of the UTSP server
+    :type url: str
+    :param api_key: API key for accessing the UTSP, defaults to ""
+    :type api_key: str, optional
+    """
+    requests.post(url, headers={"Authorization": api_key})
