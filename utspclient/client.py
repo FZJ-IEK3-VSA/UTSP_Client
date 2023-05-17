@@ -18,6 +18,15 @@ from utspclient.datastructures import (
 
 
 def decompress_result_data(data: bytes) -> ResultDelivery:
+    """
+    Decompresses the result data returned by the UTSP in the field result_delivery
+    of RestReply objects.
+
+    :param data: compressed result data
+    :type data: bytes
+    :return: decompressed result data
+    :rtype: ResultDelivery
+    """
     json_data = zlib.decompress(data).decode()
     return ResultDelivery.from_json(json_data)  # type: ignore
 
@@ -52,7 +61,7 @@ def send_request(
 def get_result(reply: RestReply) -> Optional[ResultDelivery]:
     """
     Helper function for getting a time series out of a rest reply if it was delivered.
-    Raises an exception when the calculation failed
+    Raises an exception if the calculation failed
 
     :param reply: the reply from the utsp server to check for a time series
     :type reply: RestReply
