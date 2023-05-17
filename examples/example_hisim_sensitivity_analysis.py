@@ -197,7 +197,7 @@ def multiple_parameter_sensitivity_analysis(
     hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
     all_results = calculate_multiple_hisim_requests(
         hisim_config_strings,
-        return_exceptions=True,
+        raise_exceptions=False,
         result_files=result_files,
     )
     print(f"Retrieved results from {len(all_results)} HiSim requests")
@@ -251,7 +251,7 @@ def building_code_and_heating_system_calculations(
             all_hisim_configs.append(json.dumps(config_dict))
 
     all_results = calculate_multiple_hisim_requests(
-        all_hisim_configs, return_exceptions=True
+        all_hisim_configs, raise_exceptions=False
     )
 
     base_folder = f"./results/hisim_building_code_calculations"
@@ -316,7 +316,7 @@ def boolean_parameter_test() -> None:
         all_hisim_configs.append(json.dumps(config_dict))
 
     all_results = calculate_multiple_hisim_requests(
-        all_hisim_configs, return_exceptions=True
+        all_hisim_configs, raise_exceptions=False
     )
 
     # save all result files and error messages
