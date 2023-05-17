@@ -1,10 +1,14 @@
-import json
+"""
+Functions for sending calculation requests to the UTSP and retrieving results.
+"""
+
 import time
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, Iterable, List, Optional, Set, Union
 import zlib
 
 import requests
-from pandas import DataFrame  # type: ignore
+from pandas import DataFrame
+import tqdm  # type: ignore
 from utspclient.datastructures import (
     CalculationStatus,
     RestReply,
@@ -14,6 +18,15 @@ from utspclient.datastructures import (
 
 
 def decompress_result_data(data: bytes) -> ResultDelivery:
+    """
+    Decompresses the result data returned by the UTSP in the field result_delivery
+    of RestReply objects.
+
+    :param data: compressed result data
+    :type data: bytes
+    :return: decompressed result data
+    :rtype: ResultDelivery
+    """
     json_data = zlib.decompress(data).decode()
     return ResultDelivery.from_json(json_data)  # type: ignore
 
@@ -48,7 +61,7 @@ def send_request(
 def get_result(reply: RestReply) -> Optional[ResultDelivery]:
     """
     Helper function for getting a time series out of a rest reply if it was delivered.
-    Raises an exception when the calculation failed
+    Raises an exception if the calculation failed
 
     :param reply: the reply from the utsp server to check for a time series
     :type reply: RestReply
@@ -108,3 +121,77 @@ def request_time_series_and_wait_for_delivery(
     ts = get_result(reply)
     assert ts is not None, "No time series was delivered"
     return ts
+
+
+def calculate_multiple_requests(
+    url: str,
+    requests: Iterable[Union[str, TimeSeriesRequest]],
+    api_key: str = "",
+    raise_exceptions: bool = True,
+    quiet: bool = False,
+) -> List[Union[ResultDelivery, Exception]]:
+    """
+    Sends multiple calculation requests to the UTSP and collects the results. The
+    requests can be calculated in parallel.
+
+    :param url: URL of the UTSP server
+    :type url: str
+    :param requests: The request objects to send
+    :type requests: Iterable[Union[str, TimeSeriesRequest]]
+    :param api_key: API key for accessing the UTSP, defaults to ""
+    :type api_key: str, optional
+    :param raise_exceptions: if True, failed requests raise exceptions, otherwhise the
+                             exception object is added to the result list; defaults to True
+    :type raise_exceptions: bool, optional
+    :param quiet: whether no console outputs should be produced, defaults to False
+    :type quiet: bool, optional
+    :return: a list containing the requested result objects; if raise_exceptions was
+             set to False, this list can also contain exceptions
+    :rtype: List[Union[ResultDelivery, Exception]]
+    """
+    request_iterable = requests
+    if not quiet:
+        print(f"Sending {len(requests)} requests")
+        # add a progress bar
+        request_iterable = tqdm.tqdm(requests)
+    # Send all requests to the UTSP
+    for request in request_iterable:
+        # This function just sends the request and immediately returns so the other requests don't have to wait
+        send_request(url, request, api_key)
+
+    if not quiet:
+        print("All requests sent. Starting to collect results.")
+        # reset the progress bar
+        request_iterable = tqdm.tqdm(requests)
+    # Collect the results
+    results: List[Union[ResultDelivery, Exception]] = []
+    error_count = 0
+    for request in request_iterable:
+        try:
+            # This function waits until the request has been processed and the results are available
+            result = request_time_series_and_wait_for_delivery(
+                url, request, api_key, quiet=True
+            )
+            results.append(result)
+        except Exception as e:
+            if raise_exceptions:
+                raise
+            else:
+                # return the exception as result
+                results.append(e)
+                error_count += 1
+    if not quiet:
+        print(f"Retrieved all results. Number of failed requests: {error_count}")
+    return results
+
+
+def shutdown(url: str, api_key: str = ""):
+    """
+    Shuts down all UTSP workers connected to the server.
+
+    :param url: URL of the UTSP server
+    :type url: str
+    :param api_key: API key for accessing the UTSP, defaults to ""
+    :type api_key: str, optional
+    """
+    requests.post(url, headers={"Authorization": api_key})

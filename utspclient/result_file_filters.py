@@ -3,7 +3,6 @@ This module defines relevant output files for typical use cases to avoid transmi
 and storing unneeded files
 """
 
-
 from typing import Dict
 from utspclient.datastructures import ResultFileRequirement
 

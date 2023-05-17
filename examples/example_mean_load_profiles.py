@@ -1,3 +1,10 @@
+"""
+This example shows how to send multiple long requests to the UTSP. At first, the example finishes without collecting results.
+After all requests have been calculated, the example can be run again to collect the results and calculate average profiles
+from them.
+This avoids having to keep the example running during the lenghty calculations of the requests.
+"""
+
 import json
 import time
 from datetime import datetime, timedelta

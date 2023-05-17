@@ -50,7 +50,13 @@ We are the `Institute of Energy and Climate Research - Techno-economic Systems A
 
 Acknowledgement
 =========================================================
-This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 891943. 
+This work was supported by the Helmholtz Association in the context of the `Energy System Design <https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/>`_ program.
+
+.. figure:: https://www.helmholtz.de/fileadmin/user_upload/05_aktuelles/Marke_Design/logos/HG_LOGO_S_ENG_RGB.jpg
+   :target: https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/
+   :width: 200px
+
+This work has also received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 891943. 
 
 .. figure:: ../logos/eulogo.png
    :width: 200px
