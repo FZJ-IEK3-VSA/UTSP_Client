@@ -111,7 +111,7 @@ def combine_building_code_results(result_folder: str):
     # concatenate all columns to a single dataframe and save it as a file
     results = pd.concat(columns, axis=1)
     results = modify_dataframe(results=results)
-    results.to_csv(os.path.join(result_folder, "database_for_ESM.csv"))
+    results.to_csv(os.path.join(result_folder, "database_for_ESM.csv"), sep=";", decimal=",")
 
 
 def main():
