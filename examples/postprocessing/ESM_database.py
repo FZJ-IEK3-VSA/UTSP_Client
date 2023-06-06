@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import tqdm
 
-import sensitivity_plots
+from examples.postprocessing import sensitivity_plots
 
 
 def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
@@ -72,7 +72,7 @@ def combine_building_code_results(result_folder: str):
     # initialize empty data frame
     first_result = pd.read_csv(
         os.path.join(
-            result_folder, all_result_directories[0], "csv_for_housing_data_base.csv"
+            result_folder, all_result_directories[0], "csv_for_housing_data_base_annual.csv"
         ),
         usecols=[0, 1],
     )
@@ -90,7 +90,7 @@ def combine_building_code_results(result_folder: str):
         config_file_path = os.path.join(result_path, "hisim_config.json")
         config = sensitivity_plots.load_hisim_config(config_file_path)
 
-        result_file_path = os.path.join(result_path, "csv_for_housing_data_base.csv")
+        result_file_path = os.path.join(result_path, "csv_for_housing_data_base_annual.csv")
         if not os.path.isfile(result_file_path):
             # skip this folder if the result file is missing
             folders_without_results += 1
@@ -105,7 +105,7 @@ def combine_building_code_results(result_folder: str):
         )
         columns[rowname] = result_data_column
     print(
-        f"{folders_without_results} folders did not contain the csv_for_housing_data_base.csv file."
+        f"{folders_without_results} folders did not contain the csv_for_housing_data_base_annual.csv file."
     )
 
     # concatenate all columns to a single dataframe and save it as a file
@@ -116,7 +116,7 @@ def combine_building_code_results(result_folder: str):
 
 def main():
     """Main execution function."""
-    result_folder = f"./results/hisim_building_code_calculations"
+    result_folder = f"./results/hisim_building_code_calculations/HeatPump"
     combine_building_code_results(result_folder)
 
 
