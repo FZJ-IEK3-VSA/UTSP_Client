@@ -246,7 +246,7 @@ def building_code_and_heating_system_calculations(
     if not heating_systems:
         heating_systems = [
             "HeatPump",
-            "ELectricHeating",
+            "ElectricHeating",
             "OilHeating",
             "GasHeating",
             "DistrictHeating",
