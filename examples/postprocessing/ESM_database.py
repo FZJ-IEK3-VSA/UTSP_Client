@@ -3,7 +3,7 @@ evaluations in a directory to one common csv file in the format
 suitable for ESM modellers."""
 
 import os
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 import pandas as pd
 import tqdm
 
@@ -31,16 +31,21 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     housetypes = [elem.split(".")[2] for elem in headerlist]
     constructionyears = [elem.split(".")[3] for elem in headerlist]
     rennovationdegrees = [elem.split(".")[7][:3] for elem in headerlist]
+    if "_" in headerlist[0]:
+        season_and_day = [elem.split("_")[1] for elem in headerlist]
+    else:
+        season_and_day = ["annual" for _ in headerlist]
 
     # make multiindex
     results.columns = pd.MultiIndex.from_tuples(
         [
-            (b, c, d, e)
-            for (b, c, d, e) in zip(
-                climatezones, housetypes, constructionyears, rennovationdegrees
+            (b, c, d, e, f)
+            for (b, c, d, e, f) in zip(
+                climatezones, housetypes, constructionyears, rennovationdegrees,
+                season_and_day
             )
         ],
-        names=["ClimateZones", "HouseTypes", "ConstructionYear", "RennovationDegree"],
+        names=["ClimateZones", "HouseTypes", "ConstructionYear", "RennovationDegree", "SeasonAndDay"],
     )
 
     # convert from l to kWh
@@ -57,21 +62,17 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     )
 
     # return only relevant data for ESM guys - skip building validation data from row 18 - 20
-    return results.loc[results.index[list(range(20)) + [23]]]
+    relevant_rows = list(range(20))
+    if len(results.index) > 20:
+        # also keep the row for building area if it is included in the data
+        relevant_rows += [23]
+    return results.loc[results.index[relevant_rows]]
 
 
-def combine_building_code_results(result_folder: str):
-    """
-    Combines all csv_for_housing_data_base.csv files from the result folders
-    in the specified location into a single csv file
-
-    :param result_folder: the parent directory of the result folders
-    :type result_folder: str
-    """
+def collect_dataframes(result_folder: str, filename: str) -> List[Tuple[pd.DataFrame, Dict]]:
     all_result_directories = os.listdir(result_folder)
-    columns = {}
-
-    # extract the relevant data column out of each result folder
+    results: List[Tuple[pd.DataFrame, Dict]] = []
+    # load the dataframe from each subdirectory
     folders_without_results = 0
     for result_directory in tqdm.tqdm(all_result_directories):
         result_path = os.path.join(result_folder, result_directory)
@@ -82,34 +83,68 @@ def combine_building_code_results(result_folder: str):
         config = sensitivity_plots.load_hisim_config(config_file_path)
 
         result_file_path = os.path.join(
-            result_path, "csv_for_housing_data_base_annual.csv"
+            result_path, f"{filename}.csv"
         )
         if not os.path.isfile(result_file_path):
             # skip this folder if the result file is missing
             folders_without_results += 1
             continue
-
-        result_data = pd.read_csv(result_file_path, index_col=[0, 1])
-        result_data_column = result_data["0"]
-        rowname = (
-            config["archetype_config_"]["building_code"]
-            + "-"
-            + config["archetype_config_"]["heating_system_installed"]
-        )
-        columns[rowname] = result_data_column
+        result_data = pd.read_csv(result_file_path, index_col=[0, 1], header=[0])
+        results.append((result_data, config))
     print(
         f"{folders_without_results} folders did not contain the csv_for_housing_data_base_annual.csv file."
     )
+    return results
+
+
+def combine_building_code_primes(result_folder: str):
+    """
+    Combines all csv_for_housing_data_base.csv files from the result folders
+    in the specified location into a single csv file, in the format needed for
+    the ESM primes
+
+    :param result_folder: the parent directory of the result folders
+    :type result_folder: str
+    """
+    results = collect_dataframes(result_folder, "csv_for_housing_data_base_annual")
+    columns = {}
+    for result_data, config in results:
+        result_data_column = result_data.iloc[:, 0]
+        column_name = (
+            config["archetype_config_"]["building_code"]
+        )
+        columns[column_name] = result_data_column
 
     # concatenate all columns to a single dataframe and save it as a file
-    results = pd.concat(columns, axis=1)
-    results = modify_dataframe(results=results)
-    results.to_csv(
-        os.path.join(result_folder, "database_for_ESM.csv"), sep=";", decimal=","
+    combined_results = pd.concat(columns, axis=1)
+    combined_results = modify_dataframe(results=combined_results)
+    combined_results.to_csv(
+        os.path.join(result_folder, "database_for_PRIMES.csv"), sep=";", decimal=","
     )
 
 
-def combine_ESM_databases(result_folder: str):
+def combine_building_code_TIAM_ECN(result_folder:str) -> None:
+    """" Merges tables with values for Day/Night Summer/Winter/Intermediate to one single file."""
+    results = collect_dataframes(result_folder, "csv_for_housing_data_base_seasonal")
+    columns = {}
+    for result_data, config in results:
+        for column in result_data.columns:
+            result_data_column = result_data[column]
+            rowname = (
+                config["archetype_config_"]["building_code"]
+                + "_" + column
+            )
+            columns[rowname] = result_data_column
+
+    # concatenate all columns to a single dataframe and save it as a file
+    combined_results = pd.concat(columns, axis=1)
+    combined_results = modify_dataframe(results=combined_results)
+    combined_results.to_csv(
+        os.path.join(result_folder, "database_for_TIAM.csv"), sep=";", decimal=","
+    ) 
+
+
+def combine_ESM_databases(result_folder: str, filename: str):
     """
     Merges the ESM tables created by the function combine_building_code_results
     for each heating system into a single table
@@ -117,6 +152,8 @@ def combine_ESM_databases(result_folder: str):
     :param result_folder: the result folder containing the individual tables, each in
                           a separate subdirectory with the name of the heating system
     :type result_folder: str
+    :param filename: the name of the files to combine
+    :type filename: str
     """
     # extract only the child directories (no files)
     subdirectories = next(os.walk(result_folder))[1]
@@ -132,20 +169,20 @@ def combine_ESM_databases(result_folder: str):
 
     merged_tables: Optional[pd.DataFrame] = None
     for i, heating_system in enumerate(subdirectories):
-        filename = os.path.join(result_folder, heating_system, "database_for_ESM.csv")
+        filepath = os.path.join(result_folder, heating_system, f"{filename}.csv")
         assert os.path.isfile(
-            filename
-        ), f"The file for heating system {heating_system} was not found: {filename}"
+            filepath
+        ), f"The file for heating system {heating_system} was not found: {filepath}"
         if i == 0:
             # read the first table
             merged_tables = pd.read_csv(
-                filename, header=[0, 1, 2, 3], index_col=[0, 1], sep=";", decimal=","
+                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=";", decimal=","
             )
         else:
             # read the next table and replace the rows in the merged dataframe
             assert merged_tables is not None
             new_table = pd.read_csv(
-                filename, header=[0, 1, 2, 3], index_col=[0, 1], sep=";", decimal=","
+                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=";", decimal=","
             )
             assert (
                 heating_system in heating_system_row_mapping
@@ -158,7 +195,8 @@ def combine_ESM_databases(result_folder: str):
                 ("SpaceHeating", row_name)
             ]
     assert merged_tables is not None
-    path = os.path.join(result_folder, "database_for_ESM_merged.csv")
+    path = os.path.join(result_folder, f"{filename}_merged.csv")
+    merged_tables = merged_tables.loc[:, ~merged_tables.columns.duplicated()]  # type: ignore
     merged_tables.to_csv(path, sep=";", decimal=",")
 
 
@@ -171,16 +209,18 @@ def main():
         "GasHeating",
         "DistrictHeating",
     ]
-    result_base_folder = "./results/hisim_building_code_calculations/"
+    result_base_folder = "./results/hisim_building_code_calculations - 2023-06-08/"
     # calculate the database_for_ESM table for each heating system
     for heating_system in heating_systems:
-        print(f"Creating ESM database for {heating_system}")
+        print(f"Creating ESM tables for {heating_system}")
 
         result_folder = os.path.join(result_base_folder, heating_system)
-        combine_building_code_results(result_folder)
+        combine_building_code_primes(result_folder)
+        combine_building_code_TIAM_ECN(result_folder)
 
     # combine the tables into a single table
-    combine_ESM_databases(result_base_folder)
+    combine_ESM_databases(result_base_folder, "database_for_PRIMES")
+    combine_ESM_databases(result_base_folder, "database_for_TIAM")
 
 
 if __name__ == "__main__":
