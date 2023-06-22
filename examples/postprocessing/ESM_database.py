@@ -9,6 +9,10 @@ import tqdm
 
 from examples.postprocessing import sensitivity_plots
 
+# separators for the result files
+DECIMAL_SEP = "."
+COLUMN_SEP = ";"
+
 
 def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     """Splits header to multiple lines for better understanding of building code.
@@ -119,7 +123,7 @@ def combine_building_code_primes(result_folder: str):
     combined_results = pd.concat(columns, axis=1)
     combined_results = modify_dataframe(results=combined_results)
     combined_results.to_csv(
-        os.path.join(result_folder, "database_for_PRIMES.csv"), sep=";", decimal=","
+        os.path.join(result_folder, "database_for_PRIMES.csv"), sep=COLUMN_SEP, decimal=DECIMAL_SEP
     )
 
 
@@ -140,7 +144,7 @@ def combine_building_code_TIAM_ECN(result_folder:str) -> None:
     combined_results = pd.concat(columns, axis=1)
     combined_results = modify_dataframe(results=combined_results)
     combined_results.to_csv(
-        os.path.join(result_folder, "database_for_TIAM.csv"), sep=";", decimal=","
+        os.path.join(result_folder, "database_for_TIAM.csv"), sep=COLUMN_SEP, decimal=DECIMAL_SEP
     ) 
 
 
@@ -169,20 +173,23 @@ def combine_ESM_databases(result_folder: str, filename: str):
 
     merged_tables: Optional[pd.DataFrame] = None
     for i, heating_system in enumerate(subdirectories):
+        if heating_system not in heating_system_row_mapping:
+            print(f"Skipped the following subdirectory: '{heating_system}'")
+            continue
         filepath = os.path.join(result_folder, heating_system, f"{filename}.csv")
         assert os.path.isfile(
             filepath
-        ), f"The file for heating system {heating_system} was not found: {filepath}"
+        ), f"The file for heating system '{heating_system}' was not found: {filepath}"
         if i == 0:
             # read the first table
             merged_tables = pd.read_csv(
-                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=";", decimal=","
+                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=COLUMN_SEP, decimal=DECIMAL_SEP
             )
         else:
             # read the next table and replace the rows in the merged dataframe
             assert merged_tables is not None
             new_table = pd.read_csv(
-                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=";", decimal=","
+                filepath, header=[0, 1, 2, 3, 4], index_col=[0, 1], sep=COLUMN_SEP, decimal=DECIMAL_SEP
             )
             assert (
                 heating_system in heating_system_row_mapping
@@ -197,7 +204,7 @@ def combine_ESM_databases(result_folder: str, filename: str):
     assert merged_tables is not None
     path = os.path.join(result_folder, f"{filename}_merged.csv")
     merged_tables = merged_tables.loc[:, ~merged_tables.columns.duplicated()]  # type: ignore
-    merged_tables.to_csv(path, sep=";", decimal=",")
+    merged_tables.to_csv(path, sep=COLUMN_SEP, decimal=DECIMAL_SEP)
 
 
 def main():
