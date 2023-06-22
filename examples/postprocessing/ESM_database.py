@@ -148,7 +148,7 @@ def combine_building_code_TIAM_ECN(result_folder:str) -> None:
     ) 
 
 
-def combine_ESM_databases(result_folder: str, filename: str):
+def combine_ESM_databases(result_folder: str, filename: str, decimals: int = -1):
     """
     Merges the ESM tables created by the function combine_building_code_results
     for each heating system into a single table
@@ -158,6 +158,9 @@ def combine_ESM_databases(result_folder: str, filename: str):
     :type result_folder: str
     :param filename: the name of the files to combine
     :type filename: str
+    :param decimals: if > 0, all values are rounded to the specified number of decimal
+                     digits; defaults to -1
+    :type decimals: int, optional
     """
     # extract only the child directories (no files)
     subdirectories = next(os.walk(result_folder))[1]
@@ -204,6 +207,8 @@ def combine_ESM_databases(result_folder: str, filename: str):
     assert merged_tables is not None
     path = os.path.join(result_folder, f"{filename}_merged.csv")
     merged_tables = merged_tables.loc[:, ~merged_tables.columns.duplicated()]  # type: ignore
+    if decimals > 0:
+        merged_tables = merged_tables.round(decimals)
     merged_tables.to_csv(path, sep=COLUMN_SEP, decimal=DECIMAL_SEP)
 
 
@@ -226,8 +231,8 @@ def main():
         combine_building_code_TIAM_ECN(result_folder)
 
     # combine the tables into a single table
-    combine_ESM_databases(result_base_folder, "database_for_PRIMES")
-    combine_ESM_databases(result_base_folder, "database_for_TIAM")
+    combine_ESM_databases(result_base_folder, "database_for_PRIMES", decimals=3)
+    combine_ESM_databases(result_base_folder, "database_for_TIAM", decimals=3)
 
 
 if __name__ == "__main__":
