@@ -1,6 +1,7 @@
 """
 Sends multiple requests to perform a sensitivity analysis for HiSim.
 Stores the results locally for postprocessing.
+Each provided parameter is varied separately.
 """
 
 import copy
@@ -86,7 +87,7 @@ def create_dir_if_not_exists(result_folder_name: str) -> None:
 
 def save_single_result(
     result_folder_name: str,
-    result: ResultDelivery | Exception,
+    result: Union[ResultDelivery, Exception],
     config: Optional[str] = None,
     mark_error_folder: bool = True,
 ):
