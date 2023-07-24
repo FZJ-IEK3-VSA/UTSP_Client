@@ -2,7 +2,7 @@
     "system_config_": {
         "pv_included": false,
         "pv_peak_power": 10000.0,
-        "smart_devices_included": false,
+        "smart_devices_included": 1,
         "buffer_included": false,
         "buffer_volume": 1.0,
         "battery_included": false,
@@ -30,8 +30,8 @@
         "absolute_conditioned_floor_area": null,
         "water_heating_system_installed": "DistrictHeating",
         "heating_system_installed": "DistrictHeating",
-        "mobility_set": null,
-        "mobility_distance": null,
+        "mobility_set": 1.6,
+        "mobility_distance": 15,
         "url": "http://134.94.131.167:443/api/v1/profilerequest",
         "api_key": "limited_OXT60O84N9ITLO1CM9CJ1V393QFKOKCN"
     }

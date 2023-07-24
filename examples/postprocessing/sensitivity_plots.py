@@ -87,6 +87,7 @@ def read_sensitivity_results(
     all_result_folders = listdir(path)
     all_kpis: Dict[str, Dict[Union[float, str], Dict[str, float]]] = {}
     for folder in all_result_folders:
+        print(folder)
         parameter_name, parameter_value = folder.split("-")
         if parameter_name not in all_kpis:
             all_kpis[parameter_name] = {}
@@ -318,10 +319,8 @@ def plot_building_codes_results(
 
 def main():
     """Main execution function."""
-    # path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
-    # base_config_path = "examples\\input data\\hisim_config.json"
-    base_config_path = r"C:\Users\Johanna\Desktop\UTSP_Client\examples\input data\hisim_config.json"
-    path = r"C:\Users\Johanna\Desktop\HiSIM\examples\results\sensitivity_analysis"
+    path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
+    base_config_path = "examples\\input data\\hisim_config.json"
 
     all_kpis = read_sensitivity_results(path, False)
 
