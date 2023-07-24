@@ -42,16 +42,16 @@
       }
     },
     "archetype_config_": {
-      "occupancy_profile_utsp": null,
-      "occupancy_profile": "AVG",
-      "building_code": "ES.ME.TH.03.Gen.ReEx.001.003",
-      "absolute_conditioned_floor_area": null,
-      "water_heating_system_installed": "DistrictHeating",
-      "heating_system_installed": "DistrictHeating",
-      "mobility_set": null,
-      "mobility_distance": null,
-      "url": "http://134.94.131.167:443/api/v1/profilerequest",
-      "api_key": "limited_OXT60O84N9ITLO1CM9CJ1V393QFKOKCN"
+        "occupancy_profile_utsp": null,
+        "occupancy_profile": "AVG",
+        "building_code": "ES.ME.TH.03.Gen.ReEx.001.003",
+        "absolute_conditioned_floor_area": null,
+        "water_heating_system_installed": "DistrictHeating",
+        "heating_system_installed": "DistrictHeating",
+        "mobility_set": 1.6,
+        "mobility_distance": 15,
+        "url": "http://134.94.131.167:443/api/v1/profilerequest",
+        "api_key": "limited_OXT60O84N9ITLO1CM9CJ1V393QFKOKCN"
     }
   }
 }
