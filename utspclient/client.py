@@ -97,7 +97,7 @@ def is_finished(status: CalculationStatus) -> bool:
     :return: _description_
     :rtype: bool
     """
-    return status not in [
+    return status in [
         CalculationStatus.INDATABASE,
         CalculationStatus.CALCULATIONFAILED,
     ]
