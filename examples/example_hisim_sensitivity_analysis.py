@@ -8,7 +8,7 @@ import errno
 import itertools
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 from utspclient.datastructures import ResultDelivery, ResultFileRequirement
@@ -18,7 +18,7 @@ from postprocessing.sensitivity_plots import (  # type: ignore
     read_base_config_values,
 )
 
-from example_multiple_hisim_requests import calculate_multiple_hisim_requests
+from examples.example_multiple_hisim_requests import calculate_multiple_hisim_requests
 
 
 def create_hisim_configs_from_parameter_value_list(
@@ -87,7 +87,7 @@ def create_dir_if_not_exists(result_folder_name: str) -> None:
 def save_single_result(
     result_folder_name: str,
     result: ResultDelivery | Exception,
-    config: Optional[Dict] = None,
+    config: Optional[str] = None,
     mark_error_folder: bool = True,
 ):
     """
@@ -116,7 +116,7 @@ def save_single_result(
             error_file.write(str(result))
     else:
         # save all result files in the folder
-        for filename, content in result.data.items():
+        for filename, content in result.data.items():  # type: ignore
             filepath = os.path.join(result_folder_name, filename)
             with open(filepath, "wb") as file:
                 file.write(content)
@@ -128,20 +128,20 @@ def save_single_result(
 
 
 def save_all_results(
+    base_path: str,
     parameter_name: str,
-    parameter_values: List[float],
-    results: List[ResultDelivery],
-    configs: List[Dict],
+    parameter_values: List[Any],
+    results: List[Union[ResultDelivery, Exception]],
+    configs: List[str],
 ):
     assert len(results) == len(
         configs
     ), "Number of results does not match number of configs"
     for i, value in enumerate(parameter_values):
         # save result files
-        result_folder_name = (
-            f"./results/hisim_sensitivity_analysis/{parameter_name}-{value}"
-        )
-        save_single_result(result_folder_name, results[i], configs[i])
+        result_folder_name = f"{parameter_name}-{value}"
+        result_path = os.path.join(base_path, result_folder_name)
+        save_single_result(result_path, results[i], configs[i])
 
 
 def multiple_parameter_sensitivity_analysis(
@@ -182,7 +182,7 @@ def multiple_parameter_sensitivity_analysis(
     # read the base config from file
     config_dict = load_hisim_config(base_config_path)
 
-    all_hisim_configs: List[str] = []
+    all_hisim_configs: List[Dict] = []
     for parameter_name, parameter_values in parameter_value_ranges.items():
         # get the hisim configs with the respective values
         hisim_configs = create_hisim_configs_from_parameter_value_list(
@@ -206,6 +206,7 @@ def multiple_parameter_sensitivity_analysis(
     ), "Found an invalid result object"
 
     index = 0
+    base_result_path = "./results/hisim_sensitivity_analysis/"
     for parameter_name, parameter_values in parameter_value_ranges.items():
         # for each parameter value, there is one result object
         num_results = len(parameter_values)
@@ -215,11 +216,17 @@ def multiple_parameter_sensitivity_analysis(
         print(f"Retrieved {num_results} results for parameter {parameter_name}")
         # process all requests and retrieve the results
 
-        save_all_results(parameter_name, parameter_values, results_for_one_param, configs_for_one_param)  # type: ignore
+        save_all_results(
+            base_result_path,
+            parameter_name,
+            parameter_values,
+            results_for_one_param,
+            configs_for_one_param,
+        )
 
 
 def building_code_and_heating_system_calculations(
-    building_codes: List[str], heating_systems: List[str]
+    building_codes: List[str], heating_systems: List[str] = None
 ) -> None:
     """
     Creates HiSIM requests for various buildings with
@@ -235,51 +242,58 @@ def building_code_and_heating_system_calculations(
     base_config_path = "examples\\input data\\hisim_config.json"
     config_dict = load_hisim_config(base_config_path)
 
-    num_requests = len(building_codes) * len(heating_systems)
+    # if not specified, select all available heating systems
+    if not heating_systems:
+        heating_systems = [
+            "HeatPump",
+            "ElectricHeating",
+            "OilHeating",
+            "GasHeating",
+            "DistrictHeating",
+        ]
+        print(f"Calculating for all heating systems: {heating_systems}")
+
+    num_buildings = len(building_codes)
+    num_requests = num_buildings * len(heating_systems)
     print(f"Creating {num_requests} HiSim requests")
 
-    # insert all values for the parameter and thus create different HiSim configurations
+    # insert all values for heating system and building code and thus create the desired HiSim configurations
     config = config_dict["archetype_config_"]
 
     all_hisim_configs = []
-    for building_code in building_codes:
-        config["building_code"] = building_code
-        for heating_system in heating_systems:
-            config["heating_system_installed"] = heating_system
-            config["water_heating_system_installed"] = heating_system
+    for heating_system in heating_systems:
+        config["heating_system_installed"] = heating_system
+        config["water_heating_system_installed"] = heating_system
+
+        for building_code in building_codes:
+            config["building_code"] = building_code
             # append the config string to the list
             all_hisim_configs.append(json.dumps(config_dict))
 
+    result_files = {
+        "csv_for_housing_data_base_annual.csv": ResultFileRequirement.REQUIRED,
+        "csv_for_housing_data_base_seasonal.csv": ResultFileRequirement.REQUIRED,
+    }
     all_results = calculate_multiple_hisim_requests(
-        all_hisim_configs, raise_exceptions=False
+        all_hisim_configs,
+        raise_exceptions=False,
+        result_files=result_files,
     )
 
-    base_folder = f"./results/hisim_building_code_calculations"
-    digits = len(str(num_requests))
-    for i, result in enumerate(all_results):
-        folder_name = str(i).zfill(digits)
-        result_folder_path = os.path.join(base_folder, folder_name)
-        create_dir_if_not_exists(result_folder_path)
-        if isinstance(result, Exception):
-            # the calculation failed: save the error message
-            error_message_file = os.path.join(result_folder_path, "exception.txt")
-            with open(error_message_file, "w", encoding="utf-8") as error_file:
-                error_file.write(str(result))
-        else:
-            # save all result files
-            save_single_result(result_folder_path, result)
-        # additionally save the config
-        config_file_path = os.path.join(result_folder_path, "hisim_config.json")
-        with open(config_file_path, "w", encoding="utf-8") as config_file:
-            config_file.write(all_hisim_configs[i])
+    # save results for each heating system individually
+    for i, heating_system in enumerate(heating_systems):
+        configs = all_hisim_configs[i * num_buildings : (i + 1) * num_buildings]
+        results = all_results[i * num_buildings : (i + 1) * num_buildings]
+        base_folder = f"./results/hisim_building_code_calculations/{heating_system}"
+        save_all_results(base_folder, "building", building_codes, results, configs)
 
 
 def boolean_parameter_test() -> None:
     """Varies all indicated boolean Parameters of the system configuration,
     simulates it by sending HiSIM requests to the UTSP and saves the results.
-    
-    The HiSIM configuration of the reference technology/building should be lacated in 
-    examples/input data/"""    
+
+    The HiSIM configuration of the reference technology/building should be lacated in
+    examples/input data/"""
     base_config_path = "examples\\input data\\hisim_config.json"
     # parameter ranges for full boolean parameter test
     parameters = [
@@ -331,14 +345,9 @@ def boolean_parameter_test() -> None:
 def sensitivity_analysis():
     """Varies all indicated discrete Parameters of the system configuration,
     simulates it by sending HiSIM requests to the UTSP and saves the results.
-    
-    The HiSIM configuration of the reference technology/building should be lacated in 
-    examples/input data/""" 
-    # heating_systems = ["HeatPump", "DistrictHeating"]
 
-    # building_code_and_heating_system_calculations(
-    #     building_codes=building_codes, heating_systems=heating_systems
-    # )
+    The HiSIM configuration of the reference technology/building should be lacated in
+    examples/input data/"""
 
     building_codes = pd.read_csv(
         os.path.join("examples", "input data", "tabula_buildings.csv"),
@@ -360,8 +369,10 @@ def sensitivity_analysis():
         # "buffer_volume": ["buffer_included"],
     }
 
-    result_files = {"csv_for_housing_data_base.csv": ResultFileRequirement.REQUIRED}
-
+    result_files = {
+        "csv_for_housing_data_base_annual.csv": ResultFileRequirement.REQUIRED,
+        "csv_for_housing_data_base_seasonal.csv": ResultFileRequirement.REQUIRED,
+    }
     multiple_parameter_sensitivity_analysis(
         base_config_path, parameter_value_ranges, boolean_attributes, result_files
     )
@@ -369,5 +380,11 @@ def sensitivity_analysis():
 
 if __name__ == "__main__":
     """Main execution function."""
+    building_codes = pd.read_csv(
+        os.path.join("examples", "input data", "tabula_buildings.csv"),
+        encoding="utf-8",
+    )["Number"].to_list()
+
+    building_code_and_heating_system_calculations(building_codes)
     # boolean_parameter_test()
-    sensitivity_analysis()
+    # sensitivity_analysis()

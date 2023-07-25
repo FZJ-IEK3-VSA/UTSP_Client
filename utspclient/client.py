@@ -2,6 +2,7 @@
 Functions for sending calculation requests to the UTSP and retrieving results.
 """
 
+from datetime import datetime
 import time
 from typing import Dict, Iterable, List, Optional, Set, Union
 import zlib
@@ -85,6 +86,23 @@ def get_result(reply: RestReply) -> Optional[ResultDelivery]:
     raise Exception("Unknown status")
 
 
+def is_finished(status: CalculationStatus) -> bool:
+    """
+    Checks whether the request with the specified status
+    is finished (successful or failed) or whether it is
+    still in calculation.
+
+    :param status: the status of the request
+    :type status: CalculationStatus
+    :return: _description_
+    :rtype: bool
+    """
+    return status in [
+        CalculationStatus.INDATABASE,
+        CalculationStatus.CALCULATIONFAILED,
+    ]
+
+
 def request_time_series_and_wait_for_delivery(
     url: str,
     request: Union[str, TimeSeriesRequest],
@@ -109,15 +127,15 @@ def request_time_series_and_wait_for_delivery(
         request = request.to_json()  # type: ignore
     status = CalculationStatus.UNKNOWN
     if not quiet:
+        print(f"Sending a request to the UTSP at {datetime.now()}")
         print("Waiting for the results. This might take a while.")
-    while status not in [
-        CalculationStatus.INDATABASE,
-        CalculationStatus.CALCULATIONFAILED,
-    ]:
+    while True:
         reply = send_request(url, request, api_key)
         status = reply.status
-        if status != CalculationStatus.INDATABASE:
-            time.sleep(1)
+        if is_finished(status):
+            break
+        time.sleep(1)
+
     ts = get_result(reply)
     assert ts is not None, "No time series was delivered"
     return ts
