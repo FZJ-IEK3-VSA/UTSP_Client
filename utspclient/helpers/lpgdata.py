@@ -487,27 +487,21 @@ class ChargingStationSets:
 class TravelRouteSets:
     Travel_Route_Set_for_05km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 05km Commuting Distance",
-        StrGuid("a60747ab-3427-43f8-9a61-3233f332075a"),
     )
     Travel_Route_Set_for_10km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 10km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
     )
     Travel_Route_Set_for_15km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 15km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
     )
     Travel_Route_Set_for_20km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 20km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
     )
     Travel_Route_Set_for_25km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 25km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
     )
     Travel_Route_Set_for_30km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 30km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
     )
 
 
