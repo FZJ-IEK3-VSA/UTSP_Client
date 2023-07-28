@@ -70,6 +70,7 @@ class HouseTypes:
         "HT22 Big Multifamily House (no heating/cooling)"
     )
     HT23_No_Infrastructure_at_all = "HT23 No Infrastructure at all"
+    HT70_Normal_house_with_15_000_kWh_Heating_and_5_000_kWh_Cooling_Electric_Air_Conditioning_continous_Flow_Heat_Pump = "HT70 Normal house with 15.000 kWh Heating and 5.000 kWh Cooling, Electric Air Conditioning, continous Flow Heat Pump"
 
 
 # noinspection PyPep8,PyUnusedLocal
@@ -319,6 +320,18 @@ class Households:
             StrGuid("e641e89e-41b3-4ee0-8df2-b0bb185f09ed"),
         )
     )
+    CHR70_Student_Flatsharing_4_Students: JsonReference = JsonReference(
+        "CHR70 Student Flatsharing 4 Students",
+        StrGuid("a92df65c-9233-4cd0-9027-eae06b24aaa2"),
+    )
+    CHR71_Couple_under_30_years_in_training_with_work: JsonReference = JsonReference(
+        "CHR71 Couple under 30 years in training with work",
+        StrGuid("989f7d5e-1163-46ee-95fe-e21c33a674f5"),
+    )
+    CHR72_Multigenerational_Home_3_working_1_senior_1_student_parttime: JsonReference = JsonReference(
+        "CHR72 Multigenerational Home: 3 working, 1 senior, 1 student parttime",
+        StrGuid("b06bf81d-1b2c-4981-823e-8b7c637f4715"),
+    )
     CHS01_Couple_with_2_Children_Dad_Employed: JsonReference = JsonReference(
         "CHS01 Couple with 2 Children, Dad Employed",
         StrGuid("148a1c21-2a3a-49bf-93aa-20ac0e89724e"),
@@ -411,6 +424,14 @@ class TemperatureProfiles:
             "Dresden, Germany 2000 from Deutscher Wetterdienst DWD (www.dwd.de)",
             StrGuid("532c98ac-e4ae-406e-b96c-67c8cecd5fa2"),
         )
+    )
+    Duesseldorf_Germany_2022_from_Deutscher_Wetterdienst_DWD_www_dwd_de: JsonReference = JsonReference(
+        "Düsseldorf, Germany 2022 from Deutscher Wetterdienst DWD (www.dwd.de)",
+        StrGuid("6c161d93-6d88-48ff-8c4d-0cd0e8b1cf26"),
+    )
+    Frankfurt_am_Main_Germany_2022_from_Deutscher_Wetterdienst_DWD_www_dwd_de: JsonReference = JsonReference(
+        "Frankfurt am Main, Germany, 2022 from Deutscher Wetterdienst DWD (www.dwd.de)",
+        StrGuid("5c2540d5-9c84-494c-b0d3-21507325c00f"),
     )
     Hamburg_Germany_1940_from_Deutscher_Wetterdienst_DWD_www_dwd_de: JsonReference = (
         JsonReference(
@@ -551,6 +572,10 @@ class Houses:
             "CHR07 in HT04 with Car, 30 km to work, 3.7kW Charging at work",
             StrGuid("03ae1815-a810-4c91-89aa-7bcd10f9068f"),
         )
+    )
+    CHR70_in_HT70_Heat_Pump_Air_conditioning: JsonReference = JsonReference(
+        "CHR70 in HT70 Heat Pump, Air conditioning",
+        StrGuid("68854ef4-c5d1-41c8-9c57-5bb3790acfc2"),
     )
     CHS01_Familiy_2_Children_in_HT06_normal_detached_house: JsonReference = (
         JsonReference(
@@ -860,6 +885,7 @@ class HouseholdTemplates:
         "CHR61 Family, 1 child, both at work, early living pattern"
     )
     CHR62_Couple_both_Working_from_Home = "CHR62 Couple both Working from Home"
+    CHR71_Couple_in_Training_25_65_years = "CHR71 Couple in Training, 25 - 65 years"
     CHS01_Couple_with_2_Children_Dad_Employed = (
         "CHS01 Couple with 2 Children, Dad Employed"
     )
@@ -924,6 +950,8 @@ class TraitTags:
     Sleep_Sleep_Bed_05 = "Sleep / Sleep Bed 05"
     Sleep_Sleep_Bed_08 = "Sleep / Sleep Bed 08"
     Sleep_Sleep_Bed_09 = "Sleep / Sleep Bed 09"
+    Sleep_Sleep_Bed_10 = "Sleep / Sleep Bed 10"
+    Sleep_Sleep_Bed_11 = "Sleep / Sleep Bed 11"
     Sleep_Sleep_Shiftworker_1 = "Sleep / Sleep Shiftworker 1"
     Sleep_Sleep_Shiftworker_2 = "Sleep / Sleep Shiftworker 2"
     Spare_Time_Car_Activities = "Spare Time / Car Activities"
@@ -2179,6 +2207,22 @@ class TemplatePersons:
         LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
         TemplateName="CHR62 Couple both Working from Home",
         PersonName="CHR01 Sami",
+    )
+    CHR71_0_37F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR71_0_37F",
+        Age=37,
+        Gender=Gender.Female,
+        LivingPattern="Living Pattern / Part Time Job",
+        TemplateName="CHR71 Couple in Training, 25 - 65 years",
+        PersonName="CHR02 Katee",
+    )
+    CHR71_1_38M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR71_1_38M",
+        Age=38,
+        Gender=Gender.Male,
+        LivingPattern="Living Pattern / University",
+        TemplateName="CHR71 Couple in Training, 25 - 65 years",
+        PersonName="CHR02 Tomi",
     )
     CHS01_0_45M: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHS01_0_45M",
