@@ -20,8 +20,8 @@ from postprocessing.sensitivity_plots import (  # type: ignore
 from example_multiple_hisim_requests import calculate_multiple_hisim_requests
 from example_hisim_sensitivity_analysis import save_single_result
 
+from utspclient.helpers import lpg_helper
 from utspclient.helpers.lpgdata import (Households, TransportationDeviceSets,)
-
 
 def create_hisim_configs_from_parameter_tuples(
     parameter_names: List[str],
@@ -122,6 +122,8 @@ def read_parameter_values(path: str) -> List[List[str]]:
     """Reads in - and converts parameter values for scenario from csv file."""
     parameters = pd.read_csv(path, encoding="utf-8", sep=";")
 
+    all_lpg_households = lpg_helper.collect_lpg_households()
+
     ev_translator = {
         0: None,
         1: TransportationDeviceSets.Bus_and_one_30_km_h_Car.to_dict(),
@@ -130,6 +132,12 @@ def read_parameter_values(path: str) -> List[List[str]]:
 
     lpg_classifier = parameters["LPG-Template"].to_list()
     lpg_classifier = [elem[:5] for elem in lpg_classifier]
+    lpg = []
+    for lpg_household in lpg_classifier:   
+        for hh_key, hh_reference in all_lpg_households.items():
+            if lpg_household in hh_key:
+                lpg.append(hh_reference)
+                continue
     """TODO: translate modular household classifier to {"Name": ..., "Guid":{"StrVal":...}}"""
     ev_classifier = parameters["Anzahl E-Autos"].to_list()
     ev_classifier = [ev_translator[elem] for elem in ev_classifier]
@@ -142,7 +150,9 @@ if __name__ == "__main__":
     parameter_values = read_parameter_values(path= "examples\\input data\\Mainthal.csv")
     result_files = {"UTSP_connector.ElectricityOutput.csv": ResultFileRequirement.REQUIRED,
                     "UTSP_connector.InnerDeviceHeatGains.csv": ResultFileRequirement.REQUIRED,
-                    "UTSP_connector.HeatingByResidents.csv": ResultFilesRequirement.REQUIRED,
+                    "UTSP_connector.HeatingByResidents.csv": ResultFileRequirement.REQUIRED,
+                    "CarBattery_w1.AcBatteryPower.csv": ResultFileRequirement.OPTIONAL,
+                    "CarBattery_w2.AcBatteryPower.csv": ResultFileRequirement.OPTIONAL,
                     }
     """TODO: Add car battery charge of both Car batteries if available."""
     """Main execution function."""
