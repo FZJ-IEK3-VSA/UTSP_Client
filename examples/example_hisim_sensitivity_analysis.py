@@ -20,7 +20,7 @@ from postprocessing.sensitivity_plots import (  # type: ignore
     read_base_config_values,
 )
 
-from examples.example_multiple_hisim_requests import calculate_multiple_hisim_requests
+from example_multiple_hisim_requests import calculate_multiple_hisim_requests
 
 
 def create_hisim_configs_from_parameter_value_list(
