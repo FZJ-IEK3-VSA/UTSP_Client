@@ -48,9 +48,9 @@ def create_hisim_configs_from_parameter_tuples(
     all_hisim_configs = []
     
     for values in parameter_values:
+        # clone the config dict
+        new_config = copy.deepcopy(base_config)
         for (parameter_number, parameter_name) in enumerate(parameter_names):
-            # clone the config dict
-            new_config = copy.deepcopy(base_config)
             if parameter_name in base_config["system_config_"]:
                 config_key = "system_config_"
             elif parameter_name in base_config["archetype_config_"]:
@@ -132,17 +132,17 @@ def read_parameter_values(path: str) -> List[List[str]]:
 
     lpg_classifier = parameters["LPG-Template"].to_list()
     lpg_classifier = [elem[:5] for elem in lpg_classifier]
-    lpg = []
+    lpg_ref = []
     for lpg_household in lpg_classifier:   
         for hh_key, hh_reference in all_lpg_households.items():
             if lpg_household in hh_key:
-                lpg.append(hh_reference)
+                lpg_ref.append(hh_reference)
                 continue
     """TODO: translate modular household classifier to {"Name": ..., "Guid":{"StrVal":...}}"""
     ev_classifier = parameters["Anzahl E-Autos"].to_list()
     ev_classifier = [ev_translator[elem] for elem in ev_classifier]
 
-    parameter_values = [[lpg, ev] for (lpg, ev) in zip(lpg_classifier, ev_classifier)]
+    parameter_values = [[lpg.to_dict(), ev] for (lpg, ev) in zip(lpg_ref, ev_classifier)]
     return parameter_values
 
 
