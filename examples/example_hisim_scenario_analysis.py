@@ -6,7 +6,8 @@ Multiple parameters are varied at the same time based on an input csv file.
 
 import copy
 import json
-from typing import Dict, List
+import math
+from typing import Dict, List, Union
 
 from dataclasses import field
 
@@ -66,6 +67,32 @@ def create_hisim_configs_from_parameter_tuples(
         all_hisim_configs.append(new_config)
     return all_hisim_configs
 
+
+def calculate_multiple_hisim_requests_in_batches(
+    hisim_configs: List[str],
+    raise_exceptions: bool = False,
+    result_files=None,
+    max_simultaneous_requests: int = 16,
+) -> List[Union[ResultDelivery, Exception]]:
+    """
+    Sends requests in batches to limit the number of
+    simultaneous requests on the UTSP.
+    """
+    print(f"Sending requests in batches of {max_simultaneous_requests}")
+    num_batches = math.ceil(len(hisim_configs) / max_simultaneous_requests)
+    all_results = []
+    for i in range(0, len(hisim_configs), max_simultaneous_requests):
+        print(f"Sending batch {(i//max_simultaneous_requests)+1} of {num_batches}")
+        batch = hisim_configs[i:i+max_simultaneous_requests]
+        batch_results = calculate_multiple_hisim_requests(
+            batch,
+            raise_exceptions=raise_exceptions,
+            result_files=result_files,
+        )
+        all_results.extend(batch_results)
+    return all_results
+
+
 def multiple_parameter_scenario_analysis(
     base_config_path: str,
     parameter_names: List[str],
@@ -98,7 +125,7 @@ def multiple_parameter_scenario_analysis(
     all_hisim_configs.extend(hisim_configs)
 
     hisim_config_strings = [json.dumps(config) for config in all_hisim_configs]
-    all_results = calculate_multiple_hisim_requests(
+    all_results = calculate_multiple_hisim_requests_in_batches(
         hisim_config_strings,
         raise_exceptions=False,
         result_files=result_files,
