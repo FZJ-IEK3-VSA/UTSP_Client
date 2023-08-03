@@ -126,7 +126,7 @@ def save_single_result(
         # additionally save the config
         config_file_path = os.path.join(result_folder_name, "hisim_config.json")
         with open(config_file_path, "w", encoding="utf-8") as config_file:
-            config_file.write(config)
+            config_file.write(json.dumps(config))
 
 
 def save_all_results(

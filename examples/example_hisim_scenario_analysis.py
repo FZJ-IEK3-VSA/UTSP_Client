@@ -140,8 +140,13 @@ def multiple_parameter_scenario_analysis(
     ), "Number of results does not match number of configs"
     for i, value in enumerate(parameter_values):
         # save result files
+        lpg_profile_name = value[0]["Name"][:5]
+        if value[1] is None:
+            ev_number = "zero"
+        else:
+            ev_number = value[1]["Name"][8:11]
         result_folder_name = (
-            f"./results/hisim_scenario_analysis/{i}-{value[0]}-{value[1]}"
+            f".//results//hisim_scenario_analysis//{i}-{lpg_profile_name}-{ev_number}"
         )
         save_single_result(result_folder_name, all_results[i], hisim_configs[i])
 
@@ -175,11 +180,11 @@ def read_parameter_values(path: str) -> List[List[str]]:
 
 if __name__ == "__main__":
     parameter_values = read_parameter_values(path= "examples\\input data\\Mainthal.csv")
-    result_files = {"UTSP_connector.ElectricityOutput.csv": ResultFileRequirement.REQUIRED,
-                    "UTSP_connector.InnerDeviceHeatGains.csv": ResultFileRequirement.REQUIRED,
-                    "UTSP_connector.HeatingByResidents.csv": ResultFileRequirement.REQUIRED,
-                    "CarBattery_w1.AcBatteryPower.csv": ResultFileRequirement.OPTIONAL,
-                    "CarBattery_w2.AcBatteryPower.csv": ResultFileRequirement.OPTIONAL,
+    result_files = {"AcBatteryPower_CarBattery_w1.csv": ResultFileRequirement.OPTIONAL,
+                    "AcBatteryPower_CarBattery_w1.csv": ResultFileRequirement.OPTIONAL,
+                    "HeatingByDevices_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
+                    "HeatingByResidents_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
+                    "ElectricityOutput_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
                     }
     """TODO: Add car battery charge of both Car batteries if available."""
     """Main execution function."""
