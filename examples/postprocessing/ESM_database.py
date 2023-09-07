@@ -69,7 +69,7 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     relevant_rows = list(range(20))
     if len(results.index) > 20:
         # also keep the row for building area if it is included in the data
-        relevant_rows += [23]
+        relevant_rows += [23, 24, 25]
     return results.loc[results.index[relevant_rows]]
 
 
@@ -221,7 +221,7 @@ def main():
         "GasHeating",
         "DistrictHeating",
     ]
-    result_base_folder = "./results/hisim_building_code_calculations - 2023-06-08/"
+    result_base_folder = "./results/hisim_building_code_calculations/"
     # calculate the database_for_ESM table for each heating system
     for heating_system in heating_systems:
         print(f"Creating ESM tables for {heating_system}")
