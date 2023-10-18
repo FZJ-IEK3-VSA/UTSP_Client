@@ -5,8 +5,18 @@
   "simulation_parameters": {
     "start_date": "2021-01-01T00:00:00",
     "end_date": "2022-01-01T00:00:00",
-    "seconds_per_timestep": 60,
-    "post_processing_options": [2, 9, 13, 15, 10, 16, 13, 8, 19]
+    "seconds_per_timestep": 900,
+    "post_processing_options": [
+      2,
+      9,
+      13,
+      15,
+      10,
+      16,
+      13,
+      8,
+      19
+    ]
   },
   "system_setup_config": {
     "system_config_": {
@@ -26,7 +36,9 @@
       "ev_included": true,
       "charging_station": {
         "Name": "Charging At Home with 03.7 kW",
-        "Guid": { "StrVal": "38e3a15d-d6f5-4f51-a16a-da287d14608f" }
+        "Guid": {
+          "StrVal": "38e3a15d-d6f5-4f51-a16a-da287d14608f"
+        }
       }
     },
     "archetype_config_": {
