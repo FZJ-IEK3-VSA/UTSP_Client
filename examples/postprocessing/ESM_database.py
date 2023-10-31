@@ -70,7 +70,7 @@ def modify_dataframe(results: pd.DataFrame) -> pd.DataFrame:
     relevant_rows = list(range(20))
     if len(results.index) > 20:
         # also keep the row for building area if it is included in the data
-        relevant_rows += [23, 24, 25]
+        relevant_rows += [20, 21, 23, 24, 25]
     return results.loc[results.index[relevant_rows]]
 
 
@@ -170,11 +170,11 @@ def combine_ESM_databases(result_folder: str, filename: str, decimals: int = -1)
 
     # map the heating systems to the respective row names in the tables
     heating_system_row_mapping = {
+        "DistrictHeating": "Distributed Stream [kWh]",
         "HeatPump": "Electricity - HeatPump [kWh]",
         "ElectricHeating": "Electricity [kWh]",
         "OilHeating": "Oil [kWh]",
         "GasHeating": "Gas [kWh]",
-        "DistrictHeating": "Distributed Stream [kWh]",
     }
 
     merged_tables: Optional[pd.DataFrame] = None
