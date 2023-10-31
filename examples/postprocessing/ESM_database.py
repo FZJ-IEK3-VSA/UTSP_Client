@@ -6,8 +6,9 @@ import os
 from typing import Dict, List, Optional, Tuple
 import pandas as pd
 import tqdm
+import json
 
-from examples.postprocessing import sensitivity_plots
+import sensitivity_plots
 
 # separators for the result files
 DECIMAL_SEP = "."
@@ -83,7 +84,7 @@ def collect_dataframes(result_folder: str, filename: str) -> List[Tuple[pd.DataF
         if not os.path.isdir(result_path):
             # not a folder - skip
             continue
-        config_file_path = os.path.join(result_path, "hisim_config.json")
+        config_file_path = os.path.join(result_path, "scenario_config.json")
         config = sensitivity_plots.load_hisim_config(config_file_path)
 
         result_file_path = os.path.join(
@@ -114,6 +115,7 @@ def combine_building_code_primes(result_folder: str):
     columns = {}
     for result_data, config in results:
         result_data_column = result_data.iloc[:, 0]
+        config = json.loads(config)
         column_name = (
             config["archetype_config_"]["building_code"]
         )
@@ -132,6 +134,7 @@ def combine_building_code_TIAM_ECN(result_folder:str) -> None:
     results = collect_dataframes(result_folder, "csv_for_housing_data_base_seasonal")
     columns = {}
     for result_data, config in results:
+        config = json.loads(config)
         for column in result_data.columns:
             result_data_column = result_data[column]
             rowname = (

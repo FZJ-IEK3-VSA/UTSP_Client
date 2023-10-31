@@ -72,7 +72,7 @@ def calculate_multiple_hisim_requests_in_batches(
     hisim_configs: List[str],
     raise_exceptions: bool = False,
     result_files=None,
-    max_simultaneous_requests: int = 16,
+    max_simultaneous_requests: int = 10,
 ) -> List[Union[ResultDelivery, Exception]]:
     """
     Sends requests in batches to limit the number of
@@ -185,6 +185,8 @@ if __name__ == "__main__":
                     "HeatingByDevices_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
                     "HeatingByResidents_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
                     "ElectricityOutput_UTSPConnector.csv": ResultFileRequirement.OPTIONAL,
+                    "WaterConsumption_UTSPConnector.csv":ResultFileRequirement.OPTIONAL,
+                    "FuelDelivered_DHWHeatSource_w3.csv":ResultFileRequirement.OPTIONAL,
                     }
     """TODO: Add car battery charge of both Car batteries if available."""
     """Main execution function."""

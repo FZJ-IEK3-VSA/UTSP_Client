@@ -10,7 +10,7 @@ from utspclient.datastructures import TimeSeriesRequest
 def main():
     # load a HiSim system configuration
     example_folder = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(example_folder, "input data\\hisim_config.json")
+    config_path = os.path.join(example_folder, "input data\\scenario_config.json")
     with open(config_path, "r") as config_file:
         hisim_config = config_file.read()
 
