@@ -320,7 +320,7 @@ def plot_building_codes_results(
 def main():
     """Main execution function."""
     path = r"D:\Git-Repositories\utsp-client\results\hisim_sensitivity_analysis"
-    base_config_path = "examples\\input data\\scenario_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
 
     all_kpis = read_sensitivity_results(path, False)
 

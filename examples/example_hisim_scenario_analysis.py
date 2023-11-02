@@ -191,7 +191,7 @@ if __name__ == "__main__":
     """TODO: Add car battery charge of both Car batteries if available."""
     """Main execution function."""
     hisim_configs = multiple_parameter_scenario_analysis(
-        base_config_path="examples\\input data\\scenario_config.json",
+        base_config_path="examples\\input data\\hisim_config.json",
         parameter_names=["occupancy_profile_utsp", "mobility_set"],
         parameter_values=parameter_values,
         result_files=result_files

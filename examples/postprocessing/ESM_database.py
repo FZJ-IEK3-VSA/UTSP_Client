@@ -84,7 +84,7 @@ def collect_dataframes(result_folder: str, filename: str) -> List[Tuple[pd.DataF
         if not os.path.isdir(result_path):
             # not a folder - skip
             continue
-        config_file_path = os.path.join(result_path, "scenario_config.json")
+        config_file_path = os.path.join(result_path, "hisim_config.json")
         config = sensitivity_plots.load_hisim_config(config_file_path)
 
         result_file_path = os.path.join(

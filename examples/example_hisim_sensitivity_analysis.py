@@ -124,7 +124,7 @@ def save_single_result(
                 file.write(content)
     if config:
         # additionally save the config
-        config_file_path = os.path.join(result_folder_name, "scenario_config.json")
+        config_file_path = os.path.join(result_folder_name, "hisim_config.json")
         with open(config_file_path, "w", encoding="utf-8") as config_file:
             config_file.write(json.dumps(config))
 
@@ -241,7 +241,7 @@ def building_code_and_heating_system_calculations(
     :type heating_systems: List[str]
     """
 
-    base_config_path = "examples\\input data\\scenario_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
     config_dict = load_hisim_config(base_config_path)
 
     # if not specified, select all available heating systems
@@ -296,7 +296,7 @@ def boolean_parameter_test() -> None:
 
     The HiSIM configuration of the reference technology/building should be lacated in
     examples/input data/"""
-    base_config_path = "examples\\input data\\scenario_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
     # parameter ranges for full boolean parameter test
     parameters = [
         "pv_included",
@@ -357,7 +357,7 @@ def sensitivity_analysis():
     )["Number"].to_list()
 
     # determine the base config to be used
-    base_config_path = "examples\\input data\\scenario_config.json"
+    base_config_path = "examples\\input data\\hisim_config.json"
 
     # Define value ranges for the parameter to investigate
     parameter_value_ranges = {

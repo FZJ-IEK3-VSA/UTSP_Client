@@ -13,7 +13,7 @@ def main():
     API_KEY = ""
 
     file_path = r"examples\HiSim.tar.gz"
-    files = {"hisim-0.1.1.13": open(file_path, "rb")}
+    files = {"hisim-0.1.1.45.esmtables": open(file_path, "rb")}
     assert (
         next(iter(files)).count("-") == 1
     ), "Invalid provider name: must contain exactly one dash"
