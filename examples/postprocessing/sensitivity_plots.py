@@ -58,7 +58,7 @@ def read_base_config_values(
     :return: a dict containing the relevant parameters and their respective base values
     :rtype: Dict[str, float]
     """
-    config_dict = load_hisim_config(base_config_path)
+    config_dict = load_hisim_config(base_config_path)["system_setup_config"]
     base_values = {}
     for parameter_name in relevant_parameters:
         config = config_dict["system_config_"]

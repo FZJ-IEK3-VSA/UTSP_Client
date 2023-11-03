@@ -1,15 +1,15 @@
 {
   "path_to_module": "examples/modular_example.py",
   "function_in_module": "modular_household_explicit",
-  "config_class_name": "ModularHouseholdConfig",
   "simulation_parameters": {
     "start_date": "2021-01-01T00:00:00",
     "end_date": "2022-01-01T00:00:00",
     "seconds_per_timestep": 900,
     "post_processing_options": [
       9,
-      15,
-      10
+      10,
+      13,
+      15
     ]
   },
   "system_setup_config": {
@@ -37,18 +37,18 @@
           "StrVal": "38e3a15d-d6f5-4f51-a16a-da287d14608f"
         }
       }
+    },
+    "archetype_config_": {
+      "occupancy_profile_utsp": null,
+      "occupancy_profile": "AVG",
+      "building_code": "ES.ME.TH.03.Gen.ReEx.001.003",
+      "absolute_conditioned_floor_area": null,
+      "water_heating_system_installed": "DistrictHeating",
+      "heating_system_installed": "DistrictHeating",
+      "mobility_set": 1.6,
+      "mobility_distance": 15,
+      "url": "http://134.94.131.167:443/api/v1/profilerequest",
+      "api_key": "limited_OXT60O84N9ITLO1CM9CJ1V393QFKOKCN"
     }
-  },
-  "archetype_config_": {
-    "occupancy_profile_utsp": null,
-    "occupancy_profile": "AVG",
-    "building_code": "ES.ME.TH.03.Gen.ReEx.001.003",
-    "absolute_conditioned_floor_area": null,
-    "water_heating_system_installed": "DistrictHeating",
-    "heating_system_installed": "DistrictHeating",
-    "mobility_set": 1.6,
-    "mobility_distance": 15,
-    "url": "http://134.94.131.167:443/api/v1/profilerequest",
-    "api_key": "limited_OXT60O84N9ITLO1CM9CJ1V393QFKOKCN"
   }
 }

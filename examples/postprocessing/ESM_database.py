@@ -117,7 +117,7 @@ def combine_building_code_primes(result_folder: str):
         result_data_column = result_data.iloc[:, 0]
         config = json.loads(config)
         column_name = (
-            config["archetype_config_"]["building_code"]
+            config["system_setup_config"]["archetype_config_"]["building_code"]
         )
         columns[column_name] = result_data_column
 
@@ -138,7 +138,7 @@ def combine_building_code_TIAM_ECN(result_folder:str) -> None:
         for column in result_data.columns:
             result_data_column = result_data[column]
             rowname = (
-                config["archetype_config_"]["building_code"]
+                config["system_setup_config"]["archetype_config_"]["building_code"]
                 + "_" + column
             )
             columns[rowname] = result_data_column

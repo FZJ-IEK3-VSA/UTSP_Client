@@ -260,7 +260,7 @@ def building_code_and_heating_system_calculations(
     print(f"Creating {num_requests} HiSim requests")
 
     # insert all values for heating system and building code and thus create the desired HiSim configurations
-    config = config_dict["archetype_config_"]
+    config = config_dict["system_setup_config"]["archetype_config_"]
 
     all_hisim_configs = []
     for heating_system in heating_systems:
@@ -386,6 +386,7 @@ if __name__ == "__main__":
         os.path.join("examples", "input data", "tabula_buildings.csv"),
         encoding="utf-8",
     )["Number"].to_list()
+    building_codes = building_codes[:3]
 
     building_code_and_heating_system_calculations(building_codes)
     # boolean_parameter_test()
