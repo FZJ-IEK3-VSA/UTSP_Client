@@ -32,7 +32,7 @@ def main():
 
     REQUEST_URL = "http://134.94.131.167:443/api/v1/profilerequest"
 
-    API_KEY = "OrjpZY93BcNWw8lKaMp0BEchbCc"
+    API_KEY = ""
 
     # Save start time for run time calculation
     start_time = time.time()
