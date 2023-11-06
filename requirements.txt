@@ -1,18 +1,4 @@
 setuptools
 requests
 dataclasses_json
-pandas
-numpy
-matplotlib
-mypy
 tqdm
-
-# types
-types-requests
-pandas-stubs
-data-science-types
-
-# documentation
-sphinx
-sphinx-rtd-theme
-types-tqdm

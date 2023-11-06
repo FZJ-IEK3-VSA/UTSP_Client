@@ -1,0 +1,14 @@
+# for examples
+pandas
+numpy
+matplotlib
+
+# types
+types-requests
+pandas-stubs
+data-science-types
+
+# documentation
+sphinx
+sphinx-rtd-theme
+types-tqdm

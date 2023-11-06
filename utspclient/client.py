@@ -4,11 +4,10 @@ Functions for sending calculation requests to the UTSP and retrieving results.
 
 from datetime import datetime
 import time
-from typing import Dict, Iterable, List, Optional, Set, Union
+from typing import Iterable, List, Optional, Union
 import zlib
 
 import requests
-from pandas import DataFrame
 import tqdm  # type: ignore
 from utspclient.datastructures import (
     CalculationStatus,
