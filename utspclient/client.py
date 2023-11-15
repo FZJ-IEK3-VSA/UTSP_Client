@@ -4,8 +4,7 @@ Functions for sending calculation requests to the UTSP and retrieving results.
 
 from datetime import datetime
 import time
-from typing import Iterable, List, Optional, Union
-import zlib
+from typing import Iterable, List, Optional, Sized, Union
 
 import requests
 import tqdm  # type: ignore
@@ -17,18 +16,16 @@ from utspclient.datastructures import (
 )
 
 
-def decompress_result_data(data: bytes) -> ResultDelivery:
+def decompress_result_data(result: ResultDelivery) -> ResultDelivery:
     """
-    Decompresses the result data returned by the UTSP in the field result_delivery
-    of RestReply objects.
+    Decodes and decompresses the result data returned from the UTSP.
 
-    :param data: compressed result data
-    :type data: bytes
-    :return: decompressed result data
-    :rtype: ResultDelivery
+    :param data: encoded and compressed result data
+    :return: usable result data
     """
-    json_data = zlib.decompress(data).decode()
-    return ResultDelivery.from_json(json_data)  # type: ignore
+    result.decode_data()
+    result.decompress_data()
+    return result
 
 
 def send_request(
@@ -135,9 +132,9 @@ def request_time_series_and_wait_for_delivery(
             break
         time.sleep(1)
 
-    ts = get_result(reply)
-    assert ts is not None, "No time series was delivered"
-    return ts
+    result = get_result(reply)
+    assert result is not None, "No result was delivered"
+    return result
 
 
 def calculate_multiple_requests(
@@ -168,7 +165,11 @@ def calculate_multiple_requests(
     """
     request_iterable = requests
     if not quiet:
-        print(f"Sending {len(requests)} requests")
+        if isinstance(requests, Sized):
+            number = str(len(requests))
+        else:
+            number = "an unknown number of"
+        print(f"Sending {number} requests")
         # add a progress bar
         request_iterable = tqdm.tqdm(requests)
     # Send all requests to the UTSP
