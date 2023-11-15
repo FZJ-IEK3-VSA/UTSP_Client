@@ -10,22 +10,23 @@ import requests
 import tqdm  # type: ignore
 from utspclient.datastructures import (
     CalculationStatus,
+    EncodedResultDelivery,
     RestReply,
     ResultDelivery,
     TimeSeriesRequest,
 )
 
 
-def decompress_result_data(result: ResultDelivery) -> ResultDelivery:
+def decompress_result_data(result: EncodedResultDelivery) -> ResultDelivery:
     """
     Decodes and decompresses the result data returned from the UTSP.
 
     :param data: encoded and compressed result data
     :return: usable result data
     """
-    result.decode_data()
-    result.decompress_data()
-    return result
+    decoded = result.decode_data()
+    decoded.decompress_data()
+    return decoded
 
 
 def send_request(
@@ -50,8 +51,7 @@ def send_request(
     if not response.ok:
         raise Exception(f"Received error code: {str(response)}")
     response_dict = response.json()
-    # don't use dataclasses_json here, it has bug regarding bytes
-    reply = RestReply(**response_dict)  # type: ignore
+    reply = RestReply.from_dict(response_dict)  # type: ignore
     return reply
 
 

@@ -1,13 +1,15 @@
 """
-Common data structures for communication with the UTSP server.
+Common data structures for communication between the UTSP server
+and the client.
 """
 
+import abc
 import base64
 import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
 import sys
-from typing import Dict, Mapping, Optional
+from typing import Dict, Optional
 import zlib
 
 from dataclasses_json import dataclass_json  # type: ignore
@@ -76,49 +78,16 @@ class TimeSeriesRequest:
         return hashlib.sha256(data).hexdigest()
 
 
-@dataclass_json
 @dataclass
-class ResultDelivery:
+class ResultDeliveryBase(abc.ABC):
     """
-    Contains the results for a singe request.
-    Can compress/decompress the result file contents to reduce size.
-    Can also encode each file using base64 to allow serializing
-    objects of this class to json. When encoded, the data member is
-    None and the encoded str data is contained in the internal member
-    __data_encoded.
+    Base class for the results for a singe request.
     """
 
     #: the original request the results belong to
     original_request: TimeSeriesRequest
     #: name and content of all result files
-    data: dict[str, bytes] | None = field(default_factory=dict)
-    is_compressed: bool = False
-
-    def __post_init__(self):
-        # separate member for storing base64-encoded data
-        self.__data_encoded: dict[str, str] | None = None
-
-    def is_encoded(self) -> bool:
-        """
-        Checks if the data is currently encoded or not.
-
-        :return: True if the data is encoded, else False
-        """
-        assert (self.data is None) != (
-            self.__data_encoded is None
-        ), "Bug in ResultDelivery: both data members were None"
-        return self.data is None
-
-    def get_data(self) -> Mapping[str, bytes | str]:
-        """
-        Returns a reference to the currently active data dict,
-        containing encoded or decoded data.
-
-        :return: the data dict
-        """
-        data = self.__data_encoded if self.is_encoded() else self.data
-        assert data is not None, "Bug in ResultDelivery: both data members were None"
-        return data
+    data: dict = field(default_factory=dict)
 
     def size_in_gb(self) -> float:
         """
@@ -126,8 +95,7 @@ class ResultDelivery:
 
         :return: size in gigabytes
         """
-        data = self.get_data()
-        size = sum(sys.getsizeof(r) for r in data.values())
+        size = sum(sys.getsizeof(r) for r in self.data.values())
         return round(size / 1024**3, 2)
 
     def get_file_count(self) -> int:
@@ -136,14 +104,28 @@ class ResultDelivery:
 
         :return: number of files
         """
-        return len(self.get_data())
+        return len(self.data)
+
+
+@dataclass
+class ResultDelivery(ResultDeliveryBase):
+    """
+    Contains the results for a singe request.
+    Can compress/decompress the result file contents to reduce size.
+    Should not be serialized to json due to the bytes in the data
+    member. For that purpose, the object can be encoded to a
+    EncodedResultDelivery object first.
+    """
+
+    #: name and content of all result files
+    data: dict[str, bytes] = field(default_factory=dict)
+    is_compressed: bool = False
 
     def compress_data(self):
         """
         Compresses the data to use less storage
         """
         assert not self.is_compressed, "Data is already compressed"
-        assert self.data is not None, "Cannot compress encoded data"
         self.data = {k: zlib.compress(v) for k, v in self.data.items()}
         self.is_compressed = True
 
@@ -152,7 +134,6 @@ class ResultDelivery:
         Decompresses the data.
         """
         assert self.is_compressed, "Data is not compressed"
-        assert self.data is not None, "Data has to be decoded before decompression"
         self.data = {k: zlib.decompress(v) for k, v in self.data.items()}
         self.is_compressed = False
 
@@ -160,19 +141,28 @@ class ResultDelivery:
         """
         base64-encode the data for conversion to json.
         """
-        assert self.data is not None, "Data is already encoded"
-        self.__data_encoded = {
-            k: base64.b64encode(b).decode() for k, b in self.data.items()
-        }
+        data = {k: base64.b64encode(b).decode() for k, b in self.data.items()}
+        return EncodedResultDelivery(self.original_request, data, self.is_compressed)
 
-    def decode_data(self):
+
+@dataclass_json
+@dataclass
+class EncodedResultDelivery(ResultDeliveryBase):
+    """
+    Contains encoded result data for a singe request.
+    Can be decoded back to a ResultDelivery object.
+    """
+
+    #: name and content of all result files
+    data: dict[str, str] = field(default_factory=dict)
+    is_compressed: bool = False
+
+    def decode_data(self) -> ResultDelivery:
         """
         Decode the base64-encoded data
         """
-        assert self.__data_encoded is not None, "Data is not encoded"
-        self.data = {
-            k: base64.b64decode(s.encode()) for k, s in self.__data_encoded.items()
-        }
+        data = {k: base64.b64decode(s.encode()) for k, s in self.data.items()}
+        return ResultDelivery(self.original_request, data, self.is_compressed)
 
 
 @dataclass_json
@@ -181,7 +171,7 @@ class RestReply:
     """Reply from the UTSP server to a single request. Contains all available information about the request."""
 
     #: compressed result data, if the request finished without an error
-    result_delivery: Optional[ResultDelivery] = None
+    result_delivery: Optional[EncodedResultDelivery] = None
     #: current status of the request
     status: CalculationStatus = CalculationStatus.UNKNOWN
     #: hash of the original request which this reply belongs to
