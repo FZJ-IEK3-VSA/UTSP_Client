@@ -3,6 +3,7 @@ Helper functions for creating requests for the LPG
 """
 import inspect
 import random
+from typing import Dict, List, Optional
 from utspclient.helpers import lpgdata
 from utspclient.helpers.lpgpythonbindings import (
     HouseCreationAndCalculationJob,
@@ -14,7 +15,7 @@ from utspclient.helpers.lpgpythonbindings import (
 )
 
 
-def collect_lpg_households() -> dict[str, JsonReference]:
+def collect_lpg_households() -> Dict[str, JsonReference]:
     """
     Collects the JsonReferences of all predefined LPG household
     """
@@ -46,7 +47,7 @@ def create_default_house_data() -> HouseData:
 
 def create_hh_data_from_number_and_size(
     number_of_households: int, people_per_household: int
-) -> list[HouseholdData]:
+) -> List[HouseholdData]:
     """
     Creates a list of HouseholdData objects that can be added to a HouseData object in an LPG simulation config
 
@@ -55,7 +56,7 @@ def create_hh_data_from_number_and_size(
     :param people_per_household: the number of people per household
     :type people_per_household: int
     :return: the list of HouseholdsData objects
-    :rtype: list[HouseholdData]
+    :rtype: List[HouseholdData]
     """
     households = []
     for _ in range(number_of_households):
@@ -90,15 +91,15 @@ def create_hh_data_from_number_and_size(
 def create_basic_lpg_config(
     householdref: JsonReference,
     housetype: str,
-    startdate: str | None = None,
-    enddate: str | None = None,
-    external_resolution: str | None = None,
-    geographic_location: JsonReference | None = None,
+    startdate: Optional[str] = None,
+    enddate: Optional[str] = None,
+    external_resolution: Optional[str] = None,
+    geographic_location: Optional[JsonReference] = None,
     energy_intensity: str = lpgdata.EnergyIntensityType.Random,
-    transportation_device_set: JsonReference | None = None,
-    travel_route_set: JsonReference | None = None,
-    charging_station_set: JsonReference | None = None,
-    calc_options: list[str] | None = None,
+    transportation_device_set: Optional[JsonReference] = None,
+    travel_route_set: Optional[JsonReference] = None,
+    charging_station_set: Optional[JsonReference] = None,
+    calc_options: Optional[List[str]] = None,
 ) -> HouseCreationAndCalculationJob:
     """
     Creates a basic LPG request for a single household from the most relevant parameters, using a default
