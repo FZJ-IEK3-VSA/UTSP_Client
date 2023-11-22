@@ -203,6 +203,29 @@ def calculate_multiple_requests(
     return results
 
 
+def upload_provider_build_context(
+    url: str, api_key: str, path: str, versioned_name: str
+):
+    """
+    Uploads an image build context for a provider.
+    A build context is a .tar or .tar.gz file containing
+    everything that is necessary for building the provider
+    image. The image will then be built by the UTSP server.
+
+    :param url: URL of the UTSP server to add the provider to
+    :param api_key: API key for accessing the UTSP server
+    :param path: path of the build context file
+    :param versioned_name: versioned name of the provider
+    """
+    assert (
+        versioned_name.count("-") == 1
+    ), f"Invalid provider name '{versioned_name}': must contain exactly one dash"
+    files = {versioned_name: open(path, "rb")}
+    print(f"Starting upload of {versioned_name}")
+    reply = requests.post(url, files=files, headers={"Authorization": api_key})
+    print(reply.text)
+
+
 def shutdown(url: str, api_key: str = ""):
     """
     Shuts down all UTSP workers connected to the server.

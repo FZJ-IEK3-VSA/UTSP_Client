@@ -5,22 +5,13 @@ This is done because the build context is usually significantly smaller than
 the built docker image file.
 """
 
-import requests
 
-
-def main():
-    URL = "http://134.94.131.167:443/api/v1/buildimage"
-    API_KEY = ""
-
-    file_path = r"examples\HiSim.tar.gz"
-    files = {"hisim-0.1.1.13": open(file_path, "rb")}
-    assert (
-        next(iter(files)).count("-") == 1
-    ), "Invalid provider name: must contain exactly one dash"
-
-    reply = requests.post(URL, files=files, headers={"Authorization": API_KEY})
-    print(reply.text)
+import utspclient
 
 
 if __name__ == "__main__":
-    main()
+    URL = "http://134.94.131.167:443/api/v1/buildimage"
+    API_KEY = ""
+    file_path = r"examples\HiSim.tar.gz"
+    name = "hisim-1.0.0.0"
+    utspclient.upload_provider_build_context(URL, API_KEY, file_path, name)
