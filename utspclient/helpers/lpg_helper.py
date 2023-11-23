@@ -6,11 +6,14 @@ import random
 from typing import Dict, List, Optional
 from utspclient.helpers import lpgdata
 from utspclient.helpers.lpgpythonbindings import (
+    CalcOption,
+    EnergyIntensityType,
     HouseCreationAndCalculationJob,
     HouseData,
     HouseholdData,
     HouseholdDataSpecificationType,
     HouseholdNameSpecification,
+    HouseholdTemplateSpecification,
     JsonReference,
 )
 
@@ -88,22 +91,19 @@ def create_hh_data_from_number_and_size(
     return households
 
 
-def create_basic_lpg_config(
-    householdref: JsonReference,
+def create_empty_calcspec(
     housetype: str,
     startdate: Optional[str] = None,
     enddate: Optional[str] = None,
     external_resolution: Optional[str] = None,
     geographic_location: Optional[JsonReference] = None,
-    energy_intensity: str = lpgdata.EnergyIntensityType.Random,
-    transportation_device_set: Optional[JsonReference] = None,
-    travel_route_set: Optional[JsonReference] = None,
-    charging_station_set: Optional[JsonReference] = None,
-    calc_options: Optional[List[str]] = None,
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    calc_options: Optional[List[CalcOption]] = None,
 ) -> HouseCreationAndCalculationJob:
     """
-    Creates a basic LPG request for a single household from the most relevant parameters, using a default
-    configuration for everything else.
+    Creates a basic LPG calculation specification from the most relevant parameters,
+    using a default configuration for everything else.
+    Does not include any households yet
     """
     config = HouseCreationAndCalculationJob()
 
@@ -125,10 +125,21 @@ def create_basic_lpg_config(
         config.CalcSpec.CalcOptions = calc_options
     else:
         config.CalcSpec.DefaultForOutputFiles = lpgdata.OutputFileDefault.Reasonable
+    return config
 
-    # Add the specified household
+
+def create_hhdata_from_name(
+    householdref: JsonReference,
+    transportation_device_set: Optional[JsonReference] = None,
+    travel_route_set: Optional[JsonReference] = None,
+    charging_station_set: Optional[JsonReference] = None,
+) -> HouseholdData:
+    """
+    Creates a basic HouseholdData object from a household reference.
+    This object can then be added to a LPG CalcSpec.
+    """
     hhnamespec = HouseholdNameSpecification(householdref)
-    hhn = HouseholdData(
+    hhdata = HouseholdData(
         None,
         None,
         hhnamespec,
@@ -139,5 +150,63 @@ def create_basic_lpg_config(
         TravelRouteSet=travel_route_set,
         ChargingStationSet=charging_station_set,
     )
-    config.House.Households.append(hhn)
+    return hhdata
+
+
+def create_hhdata_from_template(
+    hh_template: str,
+    transportation_device_set: Optional[JsonReference] = None,
+    travel_route_set: Optional[JsonReference] = None,
+    charging_station_set: Optional[JsonReference] = None,
+) -> HouseholdData:
+    """
+    Creates a basic HouseholdData object from a household template name.
+    This object can then be added to a LPG CalcSpec.
+    """
+    template_spec = HouseholdTemplateSpecification(HouseholdTemplateName=hh_template)
+    hhdata = HouseholdData(
+        None,
+        template_spec,
+        None,
+        "hhid",
+        "hhname",
+        HouseholdDataSpecification=HouseholdDataSpecificationType.ByTemplateName,
+        TransportationDeviceSet=transportation_device_set,
+        TravelRouteSet=travel_route_set,
+        ChargingStationSet=charging_station_set,
+    )
+    return hhdata
+
+
+def create_basic_lpg_config(
+    householdref: JsonReference,
+    housetype: str,
+    startdate: Optional[str] = None,
+    enddate: Optional[str] = None,
+    external_resolution: Optional[str] = None,
+    geographic_location: Optional[JsonReference] = None,
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    transportation_device_set: Optional[JsonReference] = None,
+    travel_route_set: Optional[JsonReference] = None,
+    charging_station_set: Optional[JsonReference] = None,
+    calc_options: Optional[List[CalcOption]] = None,
+) -> HouseCreationAndCalculationJob:
+    """
+    Creates a basic LPG request for a single household from the most relevant parameters, using a default
+    configuration for everything else.
+    """
+    config = create_empty_calcspec(
+        housetype,
+        startdate,
+        enddate,
+        external_resolution,
+        geographic_location,
+        energy_intensity,
+        calc_options,
+    )
+    hhdata = create_hhdata_from_name(
+        householdref, transportation_device_set, travel_route_set, charging_station_set
+    )
+    assert config.House is not None
+    config.House.Households.append(hhdata)
     return config
