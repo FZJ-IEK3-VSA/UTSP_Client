@@ -104,20 +104,19 @@ def request_time_series_and_wait_for_delivery(
     request: Union[str, TimeSeriesRequest],
     api_key: str = "",
     quiet: bool = False,
+    timeout: float = 10,
 ) -> ResultDelivery:
     """
-    Requests a single time series from the UTSP server from the specified time series provider
+    Requests a single time series from the UTSP server from the specified
+    time series provider.
 
     :param url: URL of the UTSP server
-    :type url: str
     :param request: The request object defining the requested time series
-    :type request: Union[str, TimeSeriesRequest]
     :param api_key: API key for accessing the UTSP, defaults to ""
-    :type api_key: str, optional
     :param quiet: whether no console outputs should be produced, defaults to False
-    :type quiet: bool, optional
+    :param timeout: the time in seconds to wait between repeated requests to
+                    check the calculation status
     :return: The requested result data
-    :rtype: ResultDelivery
     """
     if isinstance(request, TimeSeriesRequest):
         request = request.to_json()  # type: ignore
@@ -130,7 +129,7 @@ def request_time_series_and_wait_for_delivery(
         status = reply.status
         if is_finished(status):
             break
-        time.sleep(1)
+        time.sleep(timeout)
 
     result = get_result(reply)
     assert result is not None, "No result was delivered"
@@ -143,25 +142,22 @@ def calculate_multiple_requests(
     api_key: str = "",
     raise_exceptions: bool = True,
     quiet: bool = False,
+    timeout: float = 10,
 ) -> List[Union[ResultDelivery, Exception]]:
     """
     Sends multiple calculation requests to the UTSP and collects the results. The
     requests can be calculated in parallel.
 
     :param url: URL of the UTSP server
-    :type url: str
     :param requests: The request objects to send
-    :type requests: Iterable[Union[str, TimeSeriesRequest]]
     :param api_key: API key for accessing the UTSP, defaults to ""
-    :type api_key: str, optional
     :param raise_exceptions: if True, failed requests raise exceptions, otherwhise the
                              exception object is added to the result list; defaults to True
-    :type raise_exceptions: bool, optional
     :param quiet: whether no console outputs should be produced, defaults to False
-    :type quiet: bool, optional
+    :param timeout: the time in seconds to wait between repeated requests to
+                    check the calculation status
     :return: a list containing the requested result objects; if raise_exceptions was
              set to False, this list can also contain exceptions
-    :rtype: List[Union[ResultDelivery, Exception]]
     """
     request_iterable = requests
     if not quiet:
@@ -188,7 +184,7 @@ def calculate_multiple_requests(
         try:
             # This function waits until the request has been processed and the results are available
             result = request_time_series_and_wait_for_delivery(
-                url, request, api_key, quiet=True
+                url, request, api_key, quiet=True, timeout=timeout
             )
             results.append(result)
         except Exception as e:
