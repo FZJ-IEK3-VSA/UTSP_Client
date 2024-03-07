@@ -27,6 +27,8 @@ from utspclient.helpers.lpgpythonbindings import CalcOption
 
 API_KEY = ""
 
+# TODO: this example works with specifying different endpoints; this does not work anymore
+
 
 def get_hh_id(hh_name: str) -> str:
     """helper function to get the ID of a household (e.g. CHR01) from its full name"""

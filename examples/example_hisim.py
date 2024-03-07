@@ -15,7 +15,7 @@ def main():
         hisim_config = config_file.read()
 
     # Define URL to time Series request
-    URL = "http://134.94.131.167:443/api/v1/profilerequest"
+    URL = "134.94.131.167:443"
     API_KEY = ""
 
     # Save start time for run time calculation

@@ -1,11 +1,11 @@
 """Requests TRY weather data"""
 
 from utspclient.client import request_time_series_and_wait_for_delivery
-from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
+from utspclient.datastructures import TimeSeriesRequest
 
 
 def main():
-    REQUEST_URL = "http://localhost:443/api/v1/profilerequest"
+    REQUEST_URL = "localhost:443"
     API_KEY = ""
 
     weather_request = """{
@@ -16,9 +16,7 @@ def main():
     }"""
 
     request = TimeSeriesRequest(weather_request, "weather_provider")
-    result: ResultDelivery = request_time_series_and_wait_for_delivery(
-        REQUEST_URL, request, API_KEY
-    )
+    result = request_time_series_and_wait_for_delivery(REQUEST_URL, request, API_KEY)
     data = result.data["weather_data.csv"].decode()
 
     # Print all results from the request

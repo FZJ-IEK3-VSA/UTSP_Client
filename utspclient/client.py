@@ -16,6 +16,25 @@ from utspclient.datastructures import (
     TimeSeriesRequest,
 )
 
+BASE_URL = "/api/v1/"
+REQUEST_URL = BASE_URL + "profilerequest"
+STATUS_URL = BASE_URL + "requeststatus"
+UPLOAD_URL = BASE_URL + "buildimage"
+SHUTDOWN_URL = BASE_URL + "shutdown"
+
+
+def build_url(address: str, route: str) -> str:
+    """
+    Helper function to build a URL
+
+    :param address: server address
+    :param route: URL route
+    :return: the full URL
+    """
+    if not address.startswith("http"):
+        address = f"http://{address}"
+    return address + route
+
 
 def decompress_result_data(result: EncodedResultDelivery) -> ResultDelivery:
     """
@@ -35,7 +54,7 @@ def send_request(
     """
     Sends the request to the utsp and returns the reply
 
-    :param url: URL of the utsp server
+    :param url: URL of the utsp server endpoint
     :type url: str
     :param request: the request to send
     :type request: Union[str, TimeSeriesRequest]
@@ -100,7 +119,7 @@ def is_finished(status: CalculationStatus) -> bool:
 
 
 def request_time_series_and_wait_for_delivery(
-    url: str,
+    address: str,
     request: Union[str, TimeSeriesRequest],
     api_key: str = "",
     quiet: bool = False,
@@ -110,7 +129,7 @@ def request_time_series_and_wait_for_delivery(
     Requests a single time series from the UTSP server from the specified
     time series provider.
 
-    :param url: URL of the UTSP server
+    :param address: address of the UTSP server
     :param request: The request object defining the requested time series
     :param api_key: API key for accessing the UTSP, defaults to ""
     :param quiet: whether no console outputs should be produced, defaults to False
@@ -124,6 +143,7 @@ def request_time_series_and_wait_for_delivery(
     if not quiet:
         print(f"Sending a request to the UTSP at {datetime.now()}")
         print("Waiting for the results. This might take a while.")
+    url = build_url(address, REQUEST_URL)
     while True:
         reply = send_request(url, request, api_key)
         status = reply.status
@@ -137,7 +157,7 @@ def request_time_series_and_wait_for_delivery(
 
 
 def calculate_multiple_requests(
-    url: str,
+    address: str,
     requests: Iterable[Union[str, TimeSeriesRequest]],
     api_key: str = "",
     raise_exceptions: bool = True,
@@ -148,7 +168,7 @@ def calculate_multiple_requests(
     Sends multiple calculation requests to the UTSP and collects the results. The
     requests can be calculated in parallel.
 
-    :param url: URL of the UTSP server
+    :param address: address of the UTSP server
     :param requests: The request objects to send
     :param api_key: API key for accessing the UTSP, defaults to ""
     :param raise_exceptions: if True, failed requests raise exceptions, otherwhise the
@@ -169,6 +189,7 @@ def calculate_multiple_requests(
         # add a progress bar
         request_iterable = tqdm.tqdm(requests)
     # Send all requests to the UTSP
+    url = build_url(address, REQUEST_URL)
     for request in request_iterable:
         # This function just sends the request and immediately returns so the other requests don't have to wait
         send_request(url, request, api_key)
@@ -200,7 +221,7 @@ def calculate_multiple_requests(
 
 
 def upload_provider_build_context(
-    url: str, api_key: str, path: str, versioned_name: str
+    address: str, api_key: str, path: str, versioned_name: str
 ):
     """
     Uploads an image build context for a provider.
@@ -208,7 +229,7 @@ def upload_provider_build_context(
     everything that is necessary for building the provider
     image. The image will then be built by the UTSP server.
 
-    :param url: URL of the UTSP server to add the provider to
+    :param address: address of the UTSP server to add the provider to
     :param api_key: API key for accessing the UTSP server
     :param path: path of the build context file
     :param versioned_name: versioned name of the provider
@@ -218,17 +239,19 @@ def upload_provider_build_context(
     ), f"Invalid provider name '{versioned_name}': must contain exactly one dash"
     files = {versioned_name: open(path, "rb")}
     print(f"Starting upload of {versioned_name}")
+    url = build_url(address, UPLOAD_URL)
     reply = requests.post(url, files=files, headers={"Authorization": api_key})
     print(reply.text)
 
 
-def shutdown(url: str, api_key: str = ""):
+def shutdown(address: str, api_key: str = ""):
     """
     Shuts down all UTSP workers connected to the server.
 
-    :param url: URL of the UTSP server
+    :param address: address of the UTSP server
     :type url: str
     :param api_key: API key for accessing the UTSP, defaults to ""
     :type api_key: str, optional
     """
+    url = build_url(address, SHUTDOWN_URL)
     requests.post(url, headers={"Authorization": api_key})

@@ -12,12 +12,11 @@ and Dockerfile. Usually this is simply the full repository of the software.
 The .tar file can optionally be compressed via gzip and sent as a .tar.gz file.
 """
 
-
 import utspclient
 
 
 if __name__ == "__main__":
-    URL = "http://134.94.131.167:443/api/v1/buildimage"
+    URL = "134.94.131.167:443"
     API_KEY = ""
     file_path = r"examples\HiSim.tar.gz"
     name = "hisim-1.0.0.0"

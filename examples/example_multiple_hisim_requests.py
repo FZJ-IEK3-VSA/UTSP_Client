@@ -6,7 +6,7 @@ from utspclient.client import calculate_multiple_requests
 from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
 
 # Define UTSP connection parameters
-URL = "http://134.94.131.167:443/api/v1/profilerequest"
+URL = "134.94.131.167:443"
 API_KEY = ""
 
 

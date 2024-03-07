@@ -8,7 +8,7 @@ import string
 import time
 
 from utspclient.client import request_time_series_and_wait_for_delivery
-from utspclient.datastructures import ResultDelivery, TimeSeriesRequest
+from utspclient.datastructures import TimeSeriesRequest
 
 
 def main():
@@ -30,8 +30,7 @@ def main():
     # the same file name as in 'smelpg_enterprise.json' has to be used.
     input_files = {"input_data.csv": input_file_str}
 
-    REQUEST_URL = "http://134.94.131.167:443/api/v1/profilerequest"
-
+    REQUEST_URL = "134.94.131.167:443"
     API_KEY = ""
 
     # Save start time for run time calculation
@@ -48,9 +47,7 @@ def main():
         guid,
         input_files=input_files,
     )
-    result: ResultDelivery = request_time_series_and_wait_for_delivery(
-        REQUEST_URL, request, API_KEY
-    )
+    result = request_time_series_and_wait_for_delivery(REQUEST_URL, request, API_KEY)
     ts = result.data["results.csv"].decode()
 
     print("Calculation took %s seconds" % (time.time() - start_time))
