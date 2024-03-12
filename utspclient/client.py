@@ -18,6 +18,7 @@ from utspclient.datastructures import (
 
 BASE_URL = "/api/v1/"
 REQUEST_URL = BASE_URL + "profilerequest"
+REQUEST_URL_NO_RESULTS = REQUEST_URL + "/noresult"
 STATUS_URL = BASE_URL + "requeststatus"
 UPLOAD_URL = BASE_URL + "buildimage"
 SHUTDOWN_URL = BASE_URL + "shutdown"
@@ -33,6 +34,9 @@ def build_url(address: str, route: str) -> str:
     """
     if not address.startswith("http"):
         address = f"http://{address}"
+    if "/" in address[len("http://") :]:
+        # backwards compatibility: if the address contains a route, remove it
+        address = address[:7] + address[len("http://") :].split("/")[0]
     return address + route
 
 
@@ -189,23 +193,25 @@ def calculate_multiple_requests(
         # add a progress bar
         request_iterable = tqdm.tqdm(requests)
     # Send all requests to the UTSP
-    url = build_url(address, REQUEST_URL)
+    # Don't retrieve results yet to send all requests as fast as possible
+    no_results_url = build_url(address, REQUEST_URL_NO_RESULTS)
     for request in request_iterable:
         # This function just sends the request and immediately returns so the other requests don't have to wait
-        send_request(url, request, api_key)
+        send_request(no_results_url, request, api_key)
 
     if not quiet:
         print("All requests sent. Starting to collect results.")
         # reset the progress bar
         request_iterable = tqdm.tqdm(requests)
     # Collect the results
+    results_url = build_url(address, REQUEST_URL)
     results: List[Union[ResultDelivery, Exception]] = []
     error_count = 0
     for request in request_iterable:
         try:
             # This function waits until the request has been processed and the results are available
             result = request_time_series_and_wait_for_delivery(
-                url, request, api_key, quiet=True, timeout=timeout
+                results_url, request, api_key, quiet=True, timeout=timeout
             )
             results.append(result)
         except Exception as e:

@@ -23,7 +23,7 @@ def main():
     simulation_config_json = simulation_config.to_json(indent=4)  # type: ignore
 
     # %% Define connection parameters
-    REQUEST_URL = "134.94.131.167:443"
+    ADDRESS = "134.94.131.167:443"
     API_KEY = "OrjpZY93BcNWw8lKaMp0BEchbCc"
 
     # %% Prepare the time series request
@@ -38,7 +38,7 @@ def main():
 
     # %% Request the time series
     result = utsp_client.request_time_series_and_wait_for_delivery(
-        REQUEST_URL, request, api_key=API_KEY
+        ADDRESS, request, api_key=API_KEY
     )
 
     # %% Decode result data
