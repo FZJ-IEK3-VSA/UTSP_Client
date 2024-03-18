@@ -9,7 +9,7 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
 
 setuptools.setup(
     name="utspclient",
-    version="0.1.6",
+    version="0.2.0",
     author="David Neuroth",
     author_email="d.neuroth@fz-juelich.de",
     description="Universal Time Series Provider Client",
