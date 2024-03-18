@@ -1,5 +1,6 @@
  [![PyPI Version](https://img.shields.io/pypi/v/utspclient.svg)](https://pypi.python.org/pypi/utspclient)
  [![PyPI - License](https://img.shields.io/pypi/l/utspclient)](LICENSE)
+ [![Documentation Status](https://readthedocs.org/projects/utsp-client/badge/?version=latest)](https://utsp-client.readthedocs.io/en/latest/?badge=latest)
 
 <a href="https://www.fz-juelich.de/en/iek/iek-3"><img src="https://raw.githubusercontent.com/OfficialCodexplosive/README_Assets/862a93188b61ab4dd0eebde3ab5daad636e129d5/FJZ_IEK-3_logo.svg" alt="FZJ Logo" width="300px"></a>
 

@@ -1,79 +1,93 @@
-build\_new\_image
--------------------------------------------------
+Examples
+========
 
-.. automodule:: examples.build_new_image
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Subpackages
+-----------
 
-example\_hisim\_sensitivity\_analysis
--------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: examples.example_hisim_sensitivity_analysis
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   examples.postprocessing
 
-example\_hisim
--------------------------------------------------
+Submodules
+----------
+
+examples.example\_hisim module
+------------------------------
 
 .. automodule:: examples.example_hisim
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_lpg
--------------------------------------------------
+examples.example\_hisim\_sensitivity\_analysis module
+-----------------------------------------------------
+
+.. automodule:: examples.example_hisim_sensitivity_analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+examples.example\_lpg module
+----------------------------
 
 .. automodule:: examples.example_lpg
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_mean\_load\_profiles
--------------------------------------------------
+examples.example\_mean\_load\_profiles module
+---------------------------------------------
 
 .. automodule:: examples.example_mean_load_profiles
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_multiple\_hisim\_requests
--------------------------------------------------
+examples.example\_multiple\_hisim\_requests module
+--------------------------------------------------
 
 .. automodule:: examples.example_multiple_hisim_requests
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_shutdown
--------------------------------------------------
+examples.example\_shutdown module
+---------------------------------
 
 .. automodule:: examples.example_shutdown
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_smelpg
--------------------------------------------------
+examples.example\_smelpg module
+-------------------------------
 
 .. automodule:: examples.example_smelpg
    :members:
    :undoc-members:
    :show-inheritance:
 
-example\_weather\_provider
--------------------------------------------------
+examples.example\_upload\_image module
+--------------------------------------
+
+.. automodule:: examples.example_upload_image
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+examples.example\_weather\_provider module
+------------------------------------------
 
 .. automodule:: examples.example_weather_provider
    :members:
    :undoc-members:
    :show-inheritance:
 
-Postprocessing
--------------------------------------------------
+Module contents
+---------------
 
-.. toctree::
-   :maxdepth: 1
-
-   examples.postprocessing
+.. automodule:: examples
+   :members:
+   :undoc-members:
+   :show-inheritance:

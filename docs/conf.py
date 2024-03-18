@@ -11,13 +11,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join('..', 'examples')))
-sys.path.insert(0, os.path.abspath(os.path.join('..', 'examples', 'postprocessing')))
 
-project = 'UTSP Client'
-copyright = '2023, Forschungszentrum Jülich'
-author = 'David Neuroth, Johanna Ganglbauer'
-release = '0.1.3'
+sys.path.insert(0, os.path.abspath(os.path.join("..", "examples")))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "examples", "postprocessing")))
+
+project = "UTSP Client"
+copyright = "2023, Forschungszentrum Jülich"
+author = "David Neuroth, Johanna Ganglbauer"
+release = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -27,10 +28,11 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx_rtd_theme",
 ]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------

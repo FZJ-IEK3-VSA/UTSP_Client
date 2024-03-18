@@ -12,7 +12,7 @@
 Welcome to UTSP Client's documentation!
 =======================================
 This is a client library for accessing the universal time series provider (UTSP) server that works as a distributed job manager for time series generation tools.
-It includes exampels on how to use the UTSP to distribute many HiSIM calculation or several LPG evaluations, collect and filter the results, or even analyse them.
+It includes examples on how to use the UTSP to distribute many HiSIM calculation or several LPG evaluations, collect and filter the results, or even analyse them.
 
 .. toctree::
    :maxdepth: 1
