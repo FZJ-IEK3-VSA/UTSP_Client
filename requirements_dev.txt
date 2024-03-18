@@ -10,5 +10,4 @@ data-science-types
 
 # documentation
 sphinx
-sphinx-rtd-theme
 types-tqdm
