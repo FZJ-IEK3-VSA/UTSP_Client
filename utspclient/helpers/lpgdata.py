@@ -995,7 +995,8 @@ class TraitTags:
     Work_Home_Office = "Work / Home Office"
     Work_University = "Work / University"
     Work_University_related = "Work / University related"
-    Work_Work = "Work / Work"
+    Work_Work_1 = "Work / Work 1"
+    Work_Work_2 = "Work / Work 2"
     Work_Work_in_Shifts_1 = "Work / Work in Shifts 1"
     Work_Work_in_Shifts_2 = "Work / Work in Shifts 2"
 
@@ -2086,7 +2087,7 @@ class TemplatePersons:
         Name="CHR59_0_37M",
         Age=37,
         Gender=Gender.Male,
-        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
+        LivingPattern="Living Pattern / Stay at Home / Regular",
         TemplateName="CHR59 Family, 3 children, parents without work",
         PersonName="CHR59 Dani",
     )
