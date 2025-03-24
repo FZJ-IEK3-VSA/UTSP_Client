@@ -5,6 +5,8 @@ and storing unneeded files
 
 from typing import Dict
 from utspclient.datastructures import ResultFileRequirement
+from utspclient.helpers.lpgpythonbindings import JsonReference
+from utspclient.helpers import lpgdata
 
 
 class LPGFilters:
@@ -44,51 +46,74 @@ class LPGFilters:
             load_type=load_type, resolution_in_s=resolution_in_s, ext=ext
         )
 
-    class Cars:
-        _template = "Car {i}, {power}kW Charging Power, avg. Speed {speed} km h"
-        CAR1 = _template.format(i=1, power=22, speed=30)
-        CAR2 = _template.format(i=2, power=22, speed=30)
-        CAR3 = _template.format(i=3, power=22, speed=60)
-        CAR4 = _template.format(i=4, power=22, speed=60)
-        ALL = [CAR1, CAR2, CAR3, CAR4]
+    @staticmethod
+    def _get_all_transport_devices() -> list[JsonReference]:
+        """Returns a list of all transportation devices in the LPG"""
+        return [
+            getattr(lpgdata.TransportationDevices, d)
+            for d in dir(lpgdata.TransportationDevices)
+            if not d.startswith("__")
+        ]
 
     @staticmethod
-    def car_state(car: str) -> str:
+    def _get_all_car_names() -> list[str]:
+        """Returns a list of all cars in the LPG"""
+        return [
+            LPGFilters._get_car_name_for_file(d)
+            for d in LPGFilters._get_all_transport_devices()
+            if d.Name and d.Name.startswith("Car ")
+        ]
+
+    @staticmethod
+    def _get_car_name_for_file(car: JsonReference | str) -> str:
+        """Returns the name of the car as used for the result file name"""
+        if isinstance(car, JsonReference):
+            assert car.Name, "Invalid car reference"
+            name = car.Name
+        else:
+            name = car
+        return name.replace("/", " ")
+
+    @staticmethod
+    def car_state(car: JsonReference | str) -> str:
         """Result file names for car states"""
-        return f"Results/Carstate.{car}.HH1.json"
+        name = LPGFilters._get_car_name_for_file(car)
+        return f"Results/Carstate.{name}.HH1.json"
 
     @staticmethod
     def all_car_states_optional() -> Dict[str, ResultFileRequirement]:
         """Helper function to get any created car state file."""
         return {
             LPGFilters.car_state(c): ResultFileRequirement.OPTIONAL
-            for c in LPGFilters.Cars.ALL
+            for c in LPGFilters._get_all_car_names()
         }
 
     @staticmethod
-    def car_location(car: str) -> str:
+    def car_location(car: JsonReference | str) -> str:
         """Result file names for car locations"""
-        return f"Results/CarLocation.{car}.HH1.json"
+        name = LPGFilters._get_car_name_for_file(car)
+        return f"Results/CarLocation.{name}.HH1.json"
 
     @staticmethod
     def all_car_locations_optional() -> Dict[str, ResultFileRequirement]:
         """Helper function to get any created car location file."""
         return {
             LPGFilters.car_location(c): ResultFileRequirement.OPTIONAL
-            for c in LPGFilters.Cars.ALL
+            for c in LPGFilters._get_all_car_names()
         }
 
     @staticmethod
-    def driving_distance(car: str) -> str:
+    def driving_distance(car: JsonReference | str) -> str:
         """Result file names for driving distances"""
-        return f"Results/DrivingDistance.{car}.HH1.json"
+        name = LPGFilters._get_car_name_for_file(car)
+        return f"Results/DrivingDistance.{name}.HH1.json"
 
     @staticmethod
     def all_driving_distances_optional() -> Dict[str, ResultFileRequirement]:
         """Helper function to get any created driving distance file."""
         return {
             LPGFilters.driving_distance(c): ResultFileRequirement.OPTIONAL
-            for c in LPGFilters.Cars.ALL
+            for c in LPGFilters._get_all_car_names()
         }
 
     class BodilyActivity:

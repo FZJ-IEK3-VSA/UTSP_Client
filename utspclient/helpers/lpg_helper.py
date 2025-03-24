@@ -1,6 +1,7 @@
 """
 Helper functions for creating requests for the LPG
 """
+
 import inspect
 import random
 from typing import Dict, List, Optional
@@ -207,6 +208,8 @@ def create_basic_lpg_config(
     hhdata = create_hhdata_from_name(
         householdref, transportation_device_set, travel_route_set, charging_station_set
     )
+    if transportation_device_set or travel_route_set or charging_station_set:
+        config.CalcSpec.EnableTransportation = True  # type: ignore
     assert config.House is not None
     config.House.Households.append(hhdata)
     return config
